@@ -2,9 +2,9 @@
 //   node tools/verify-hub.mjs [outDir] [baseUrl]     baseUrl default http://localhost:8080/
 //   (production: node tools/serve.mjs 8090 dist, then http://localhost:8090/)
 // The menu: cards from SITE.games with screenshots and PLAY, no 3D loaded, brand font, the
-// NEW GAMES & UPDATES block (Instagram, X, >= 44 px), an unavailable game shown greyed out with no
+// Follow for updates block (Instagram, X, >= 44 px), an unavailable game shown greyed out with no
 // PLAY. Launch Driver POV -> back to games (sound stopped) -> Fisherman POV -> back -> Driver again.
-// The "??? POV" teaser card: COMING SOON, no PLAY, "Get notified" to Instagram.
+// The "??? POV" teaser card: one static COMING SOON status after the tagline, no links or buttons.
 // Layout: phones 360x800 / 390x844 / 430x932 portrait (cards stacked, everything on one screen),
 // 844x390 and 667x375 landscape and 1280x800 desktop (cards side by side).
 import { chromium } from 'playwright';
@@ -43,22 +43,23 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
       font: [...document.fonts].some((f) => f.family.includes('NewRodin') && f.status === 'loaded') && /NewRodin/.test(getComputedStyle(document.querySelector('.hub-title')).fontFamily),
       bg: getComputedStyle(document.querySelector('.hub')).backgroundImage,
       social: [...document.querySelectorAll('.social-btn')].map((a) => ({ k: a.dataset.link, href: a.href, w: a.offsetWidth, h: a.offsetHeight, label: a.textContent.trim() })),
+      socialTitle: document.querySelector('.social-title').textContent.trim(),
       events: (window.__events || []).length,
       sideBySide: cards.length > 1 && Math.abs(cards[0].getBoundingClientRect().top - cards[1].getBoundingClientRect().top) < 2,
     };
   });
   check('menu: Fisherman POV and Driver POV cards with screenshots and PLAY, then the ??? POV teaser', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html,DRIVER POV>driver.html,??? POV>undefined' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
-  const teaser = await page.evaluate(() => { const c = document.querySelector('.card.teaser'); const n = c?.querySelector('.notify'); return { badge: c?.querySelector('.soon-badge')?.textContent, play: !!c?.querySelector('.btn-play'), href: n?.href, h: n?.offsetHeight }; });
-  check('teaser: COMING SOON, no PLAY, "Get notified" to Instagram (>= 44 px)', teaser.badge === 'COMING SOON' && !teaser.play && teaser.href === 'https://www.instagram.com/noclipepe/' && teaser.h >= 44, JSON.stringify(teaser));
+  const teaser = await page.evaluate(() => { const c = document.querySelector('.card.teaser'); const s = c?.querySelector('.coming-soon'); return { status: s?.textContent, count: c?.querySelectorAll('.coming-soon').length, interactive: !!c?.querySelector('a, button, [role=button], [tabindex]'), last: s === c?.querySelector('.card-body').lastElementChild, oldBadge: !!c?.querySelector('.soon-badge'), h: s?.offsetHeight }; });
+  check('teaser: one static COMING SOON status in the button position, no interactive controls', teaser.status === 'COMING SOON' && teaser.count === 1 && !teaser.interactive && teaser.last && !teaser.oldBadge && teaser.h >= 48, JSON.stringify(teaser));
   check('menu loads no 3D (no three.js, meshes or canvas)', !hub.three && hub.canvas === 0);
   check('menu uses the brand font and the supplied background', hub.font && /assets\/brand\/background/.test(hub.bg));
-  check('NEW GAMES & UPDATES: Instagram + X, labelled, >= 44 px', hub.social.map((s) => s.k).join() === 'instagram,x' && hub.social[0].href === 'https://www.instagram.com/noclipepe/' && hub.social[1].href === 'https://x.com/noclipepe' && hub.social.every((s) => s.w >= 44 && s.h >= 44 && s.label), JSON.stringify(hub.social.map((s) => [s.label, s.w, s.h])));
+  check('Follow for updates: Instagram + X, labelled, >= 44 px', hub.socialTitle === 'Follow for updates' && hub.social.map((s) => s.k).join() === 'instagram,x' && hub.social[0].href === 'https://www.instagram.com/noclipepe/' && hub.social[1].href === 'https://x.com/noclipepe' && hub.social.every((s) => s.w >= 44 && s.h >= 44 && s.label), JSON.stringify(hub.social.map((s) => [s.label, s.w, s.h])));
   check('desktop: the cards sit side by side', hub.sideBySide);
   check('opening the menu tracks nothing', hub.events === 0);
   await page.click('.social-btn[data-link=instagram]');
   await page.click('.social-btn[data-link=x]');
-  await page.click('.card.teaser .notify');
-  check('Instagram + X clicks are tracked (teaser too)', (await page.evaluate(() => window.__events.map((e) => e.name + (e.props.from === 'teaser' ? ':teaser' : '')).join())) === 'instagram_clicked,x_clicked,instagram_clicked:teaser');
+  await page.click('.card.teaser .coming-soon');
+  check('only Instagram + X clicks are tracked; the teaser status does nothing', (await page.evaluate(() => window.__events.map((e) => e.name).join())) === 'instagram_clicked,x_clicked' && page.url() === BASE);
   await page.screenshot({ path: `${out}/hub-desktop.png` });
 
   // ---- Driver POV, back, Fisherman POV, back, Driver POV again

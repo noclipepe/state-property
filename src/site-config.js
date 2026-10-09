@@ -26,8 +26,8 @@ export const SITE = {
   //   tagline    a few words under the title
   //   image      card screenshot, 16:10 (assets/brand/card-<id>.jpg; tools/capture-previews.mjs makes them)
   //   available  false shows the card greyed out with "Not available yet" and no PLAY button
-  //   teaser     true (with available: false): a "COMING SOON" announcement card with a
-  //              "Get notified" button to Instagram instead of the greyed-out look. When the game
+  //   teaser     true (with available: false): an announcement card with a static
+  //              "COMING SOON" status instead of a launch button. When the game
   //              is ready, give it a real title, image and launch, and set available: true.
   //   launch     { page: 'x.html' } a game page in this project (the build publishes it), or
   //              { url: 'https://…' } a game hosted elsewhere
