@@ -47,8 +47,10 @@ const pages = ['index.html', ...SITE.games.filter((g) => g.available && g.launch
 const entries = [];
 for (const page of pages) {
   let html = fs.readFileSync(path.join(ROOT, page), 'utf8');
-  html = html.replace(/\{\{(\w+)\}\}/g, (_, k) => esc(vars[k] ?? ''));
-  if (!base) html = html.replace(/\s*<meta property="og:url" content="">/, ''); // unknown until SITE.siteUrl is set
+  const pageVars = { ...vars, pageUrl: base && base + (page === 'index.html' ? '' : page) };
+  html = html.replace(/\{\{(\w+)\}\}/g, (_, k) => esc(pageVars[k] ?? ''));
+  // unknown until SITE.siteUrl is set
+  if (!base) html = html.replace(/\s*<meta property="og:url" content="">/, '').replace(/\s*<link rel="canonical" href="">/, '');
   if (PAGE_HEAD[page]) html = html.replace('<script type="importmap">', PAGE_HEAD[page] + '<script type="importmap">');
   if (/\{\{|localhost/.test(html)) throw new Error(`${page} still has a placeholder or a localhost reference`);
   fs.writeFileSync(path.join(DIST, page), html);
@@ -174,7 +176,12 @@ const kb = (n) => (n / 1024).toFixed(0) + ' KB';
 for (const [n, [a, b]] of Object.entries(packs)) console.log(`mesh ${n.padEnd(10)} ${kb(a).padStart(8)} -> ${kb(b).padStart(8)}`);
 const largest = files.map((f) => [rel(f).slice(5), fs.statSync(f).size]).sort((a, b) => b[1] - a[1]).slice(0, 5);
 console.log(`dist: ${files.length} files, ${(total / 1048576).toFixed(2)} MiB; largest: ${largest.map(([f, n]) => `${f} ${kb(n)}`).join(', ')}`);
-if (!SITE.siteUrl) console.log('note: SITE.siteUrl is empty, so og:image is relative and og:url is omitted (set it once the address is known, then rebuild)');
+if (!SITE.siteUrl) console.log('note: SITE.siteUrl is empty, so og:image is relative and og:url / canonical are omitted (set it once the address is known, then rebuild)');
+else for (const page of pages) { // every share URL on every page must be absolute and on the site
+  const html = fs.readFileSync(path.join(DIST, page), 'utf8');
+  for (const m of html.matchAll(/<(?:meta (?:property|name)="(?:og:url|og:image|twitter:image)"[^>]*content|link rel="canonical"[^>]*href)="([^"]*)"/g))
+    if (!m[1].startsWith(base)) throw new Error(`${page}: share URL is not absolute on ${base}: ${m[1]}`);
+}
 
 // ------------------------------------------------------------------ zip (stored paths relative to dist/, no dependencies)
 function zip(entries) {

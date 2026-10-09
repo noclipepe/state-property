@@ -4,7 +4,11 @@ import { patchMaterial, globalUniforms, TrampleMap, TRAMPLE_GLSL } from './shadi
 
 export const SUN_DIR = new THREE.Vector3(-0.42, 0.74, 0.53).normalize(); // direction TO the sun
 
-export function createWorld(renderer, quality) {
+/**
+ * opts.grass: where the instanced grass grows, {x, z, r} (default: around the fisherman POV's
+ * spot) and opts.grassScale: instance-count multiplier for a bigger field.
+ */
+export function createWorld(renderer, quality, opts = {}) {
   const scene = new THREE.Scene();
   scene.fog = new THREE.Fog(0xbfd3e0, 35, 130);
   globalUniforms.uSunDir.value.copy(SUN_DIR);
@@ -72,7 +76,7 @@ export function createWorld(renderer, quality) {
   scene.add(ground);
 
   // ---------------- instanced grass near the play area
-  const grass = makeGrass(quality.grass);
+  const grass = makeGrass(Math.round(quality.grass * (opts.grassScale ?? 1)), opts.grass);
   scene.add(grass);
 
   // ---------------- trees
@@ -115,7 +119,11 @@ export function createWorld(renderer, quality) {
   };
 }
 
-function makeGrass(count) {
+// the pond (water + bank) is no place for grass
+const POND_C = { x: 11, z: 6.5, rx: 5.2 * 1.3, rz: 5.2 };
+const inPond = (x, z) => ((x - POND_C.x) / POND_C.rx) ** 2 + ((z - POND_C.z) / POND_C.rz) ** 2 < 1;
+
+function makeGrass(count, area = { x: -0.5, z: 1.2, r: 13 }) {
   // a clump of 5 blades, each a curved strip of 3 quads
   const blades = 5, segs = 2;
   const pos = [], uv = [], idx = [];
@@ -171,13 +179,15 @@ function makeGrass(count) {
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3();
   let i = 0;
   while (i < count) {
-    // denser near the player's area (driver side), sparser further away
-    const r = Math.pow(Math.random(), 0.75) * 13;
+    // denser near the middle of the play area, sparser further away
+    const r = Math.pow(Math.random(), 0.75) * area.r;
     const a = Math.random() * Math.PI * 2;
-    const x = Math.cos(a) * r - 0.5, z = Math.sin(a) * r + 1.2;
-    if (Math.abs(z + 14) < 4.8) continue; // no grass on the road
+    const x = Math.cos(a) * r + area.x, z = Math.sin(a) * r + area.z;
+    if (Math.abs(z + 14) < 4.8 || inPond(x, z)) continue; // no grass on the road or in the pond
     q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.random() * Math.PI * 2);
-    const sc = 0.8 + Math.random() * 0.6;
+    // blades get shorter toward the edge of the field instead of stopping in a hard line
+    const edge = 0.35 + 0.65 * THREE.MathUtils.smoothstep(area.r - r, 0, area.r * 0.18);
+    const sc = (0.8 + Math.random() * 0.6) * edge;
     s.set(sc, sc * (0.8 + Math.random() * 0.5), sc);
     m.compose(new THREE.Vector3(x, 0, z), q, s);
     mesh.setMatrixAt(i++, m);
@@ -241,45 +251,77 @@ function makeTrees(scene, quality) {
     bushes.push([x + (Math.random() - 0.5) * 0.5, -6.6 + (Math.random() - 0.5) * 1.4, 1.0 + Math.random() * 1.2]);
   }
   const perBush = Math.round(perTree * 0.35);
-  const total = list.length * perTree + bushes.length * perBush;
+  const nearLeaves = Math.round(perTree * 1.35); // nearby crowns get fuller foliage
+  const total = list.length * nearLeaves + bushes.length * perBush;
   const card = new THREE.PlaneGeometry(1.1, 1.1);
   const leaves = new THREE.InstancedMesh(card, leafMat, total);
   const m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3();
-  let k = 0;
+  const UP = new THREE.Vector3(0, 1, 0);
+  // wood and the crown cores are instanced too: three draw calls for every tree in the scene
+  const trunkGeo = new THREE.CylinderGeometry(0.6, 1, 1, 9).translate(0, 0.5, 0); // base at the origin
+  const branchGeo = new THREE.CylinderGeometry(0.35, 1, 1, 6).translate(0, 0.5, 0);
+  const coreGeo = new THREE.IcosahedronGeometry(1, 2);
+  { // lumpy, not a smooth ball
+    const pa = coreGeo.attributes.position, v = new THREE.Vector3();
+    const bump = (p) => 1 + 0.16 * Math.sin(p.x * 5.1 + p.y * 2.3) * Math.cos(p.z * 4.3 - p.y * 3.7) + 0.08 * Math.sin(p.x * 11 + p.z * 9);
+    for (let i = 0; i < pa.count; i++) { v.fromBufferAttribute(pa, i); v.multiplyScalar(bump(v)); pa.setXYZ(i, v.x, v.y, v.z); }
+    coreGeo.computeVertexNormals();
+  }
+  const coreMat = new THREE.MeshStandardMaterial({ color: 0x223817, roughness: 1 });
+  const trunks = new THREE.InstancedMesh(trunkGeo, barkMat, list.length);
+  const branches = new THREE.InstancedMesh(branchGeo, barkMat, list.length * 5);
+  const cores = new THREE.InstancedMesh(coreGeo, coreMat, list.length * 3);
+  let k = 0, nt = 0, nb = 0, nc = 0;
   const canopy = [];
   for (const [x, z, h, cr, near] of list) {
     const far = Math.hypot(x, z) > 25;
-    const trunkH = h * 0.55;
-    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.16 * (h / 9), 0.28 * (h / 9), trunkH, 8), barkMat);
-    trunk.position.set(x, trunkH / 2, z);
-    trunk.castShadow = !far; trunk.receiveShadow = true;
-    scene.add(trunk);
-    // a couple of branches
-    for (let b = 0; b < 3; b++) {
-      const br = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.1, cr * 0.9, 6), barkMat);
-      br.position.set(x, trunkH * (0.75 + b * 0.1), z);
-      br.rotation.set(0.9, b * 2.1, 0);
-      br.translateY(cr * 0.4);
-      scene.add(br);
-    }
+    const trunkH = h * 0.55, girth = 0.28 * (h / 9);
+    const lean = new THREE.Euler((Math.random() - 0.5) * 0.08, 0, (Math.random() - 0.5) * 0.08);
+    q.setFromEuler(lean);
+    m.compose(new THREE.Vector3(x, 0, z), q, s.set(girth, trunkH, girth));
+    trunks.setMatrixAt(nt++, m);
+    const top = new THREE.Vector3(0, trunkH, 0).applyQuaternion(q).add(new THREE.Vector3(x, 0, z));
     const cy = trunkH + cr * 0.55;
-    for (let i = 0; i < perTree; i++) {
-      // points in a lumpy ellipsoid
+    const crown = new THREE.Vector3(top.x, cy, top.z);
+    // 3-5 limbs fanning upward from the top of the trunk, ending inside the crown
+    const nLimbs = 3 + Math.floor(Math.random() * 3), a0 = Math.random() * Math.PI * 2;
+    for (let b = 0; b < nLimbs; b++) {
+      const az = a0 + (b / nLimbs) * Math.PI * 2 + (Math.random() - 0.5) * 0.6;
+      const el = THREE.MathUtils.degToRad(38 + Math.random() * 22);
+      const dir = new THREE.Vector3(Math.cos(el) * Math.cos(az), Math.sin(el), Math.cos(el) * Math.sin(az));
+      const len = cr * (0.5 + Math.random() * 0.2);
+      const start = top.clone().addScaledVector(UP, -trunkH * (0.04 + Math.random() * 0.12));
+      q.setFromUnitVectors(UP, dir);
+      m.compose(start, q, s.set(girth * 0.3, len, girth * 0.3));
+      branches.setMatrixAt(nb++, m);
+    }
+    // a dark leafy core so the sky doesn't show through the leaf cards
+    for (let c = 0; c < 3; c++) {
+      const off = new THREE.Vector3((Math.random() - 0.5) * cr * 0.6, (Math.random() - 0.4) * cr * 0.35, (Math.random() - 0.5) * cr * 0.6);
+      const f = 0.82 + Math.random() * 0.25;
+      q.setFromEuler(e.set(0, Math.random() * Math.PI, 0));
+      m.compose(crown.clone().add(off), q, s.set(cr * 0.5 * f, cr * 0.38 * f, cr * 0.5 * f));
+      cores.setMatrixAt(nc++, m);
+    }
+    for (let i = 0, n = far ? perTree : nearLeaves; i < n; i++) {
+      // points in a lumpy ellipsoid, mostly toward its surface (that's where foliage is)
       const u = Math.random(), vv = Math.random();
       const th = Math.acos(2 * u - 1), ph = vv * Math.PI * 2;
-      const rr = Math.cbrt(Math.random()) * cr * (0.75 + 0.25 * Math.random());
-      const px = x + Math.sin(th) * Math.cos(ph) * rr * 1.1;
+      const rr = (0.55 + 0.45 * Math.cbrt(Math.random())) * cr * (0.8 + 0.2 * Math.random());
+      const px = crown.x + Math.sin(th) * Math.cos(ph) * rr * 1.1;
       const py = cy + Math.cos(th) * rr * 0.75;
-      const pz = z + Math.sin(th) * Math.sin(ph) * rr * 1.1;
+      const pz = crown.z + Math.sin(th) * Math.sin(ph) * rr * 1.1;
       e.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
       q.setFromEuler(e);
-      const sc = (far ? 1.6 : 1.0) * (0.7 + Math.random() * 0.6);
+      const sc = (far ? 1.7 : 1.1) * (0.75 + Math.random() * 0.6);
       s.set(sc, sc, sc);
       m.compose(new THREE.Vector3(px, py, pz), q, s);
       leaves.setMatrixAt(k++, m);
     }
     if (near) canopy.push(new THREE.Vector4(x, z, cr * 1.05, cy));
   }
+  trunks.count = nt; branches.count = nb; cores.count = nc;
+  for (const im of [trunks, branches, cores]) { im.castShadow = true; im.receiveShadow = true; im.frustumCulled = false; scene.add(im); }
   for (const [x, z, r] of bushes) {
     for (let i = 0; i < perBush; i++) {
       const u = Math.random(), vv = Math.random();

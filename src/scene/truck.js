@@ -181,8 +181,25 @@ export class Truck {
       m.renderOrder = 2;
       return m;
     };
-    // rear door windows both sides, front passenger window. Driver window is rolled down.
-    this.body.add(sideGlass(D.rearWin.x0, D.rearWin.x1, 1), sideGlass(D.rearWin.x0, D.rearWin.x1, -1), sideGlass(D.frontWin.x0 + 0.06, D.frontWin.x1, -1));
+    // rear door windows both sides. Driver window is rolled down.
+    this.body.add(sideGlass(D.rearWin.x0, D.rearWin.x1, 1), sideGlass(D.rearWin.x0, D.rearWin.x1, -1));
+    // front passenger window: its front edge follows the slanted A-pillar (a plain rectangle left
+    // an open triangle at the bottom-front and showed a hard vertical edge mid-window)
+    {
+      const WS = this.ws, slope = -WS.n[1] / WS.n[0]; // dx/dy along the windshield / A-pillar
+      const y0 = D.frontWin.y0 - 0.01, y1 = D.roof - 0.065;
+      const xFront = (y) => WS.p0[0] + (y - WS.p0[1]) * slope - 0.02;
+      const zAt = (y) => -(TH.a[0] - ((y - TH.a[1]) * TH.n[1] + 0.012) / TH.n[0]);
+      const x1 = D.frontWin.x1 + 0.015;
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([
+        xFront(y0), y0, zAt(y0), x1, y0, zAt(y0), x1, y1, zAt(y1), xFront(y1), y1, zAt(y1)], 3));
+      g.setIndex([0, 1, 2, 0, 2, 3]);
+      g.computeVertexNormals();
+      const front = new THREE.Mesh(g, glass);
+      front.renderOrder = 2;
+      this.body.add(front);
+    }
     // lowered driver glass just visible at the sill
     const lowered = new THREE.Mesh(new THREE.PlaneGeometry(D.frontWin.x1 - D.frontWin.x0 - 0.05, 0.03), glass);
     lowered.position.set((D.frontWin.x0 + D.frontWin.x1) / 2, D.belt - 0.005, 0.945);

@@ -1,5 +1,7 @@
 # STATE PROPERTY
 
+[![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
+
 Two playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
 ![The series menu, Fisherman POV and Driver POV](docs/screenshot.jpg)
@@ -68,8 +70,9 @@ directory `dist`, root directory left empty (the repository root).
 ## Project notes
 
 - `src/site-config.js` holds everything public-facing: the games in the menu, creator links,
-  the public site address used for share previews, and an optional analytics adapter (off by
-  default; no data is collected). To add a game, add an entry to `SITE.games`.
+  the public site address (`siteUrl`, used for canonical links and share previews) and an
+  optional analytics adapter (off by default; no data is collected). To add a game, add an
+  entry to `SITE.games`.
 - `tools/bake-*.mjs` regenerate the meshes (`npm run bake`). The `verify-*` scripts and
   `check.mjs` are browser tests (Playwright; `npx playwright install chromium` first).
 - See [ATTRIBUTION.md](ATTRIBUTION.md) for third-party code, the font and asset provenance.

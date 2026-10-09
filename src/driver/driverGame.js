@@ -52,7 +52,8 @@ export class DriverGame {
     const parts = { world: 0, truck: 0, grandpa: 0, fisher: 0, props: 0, audio: 0 };
     const report = (k, v, label) => { parts[k] = v; progress(Object.values(parts).reduce((a, b) => a + b, 0) / 6, label); };
     report('world', 0, 'Building the scene…');
-    this.world = createWorld(this.renderer, this.quality);
+    // grass around the parked pickup (both windows) and along the drag path to the pond
+    this.world = createWorld(this.renderer, this.quality, { grass: { x: -1.5, z: 6.0, r: 17 }, grassScale: 1.6 });
     this.scene = this.world.scene;
     report('world', 1);
     const [truck, grandpa, fisher, props] = await Promise.all([

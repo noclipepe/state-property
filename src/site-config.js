@@ -11,7 +11,7 @@ export const SITE = {
 
   // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
   // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
-  siteUrl: '',
+  siteUrl: 'https://state-property.pages.dev/',
 
   links: {
     instagram: 'https://www.instagram.com/noclipepe/', // primary destination
