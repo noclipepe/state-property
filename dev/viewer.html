@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Asset viewer</title>
+<style>html,body{margin:0;height:100%;background:#9fb3c4;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"../vendor/three/three.module.js","three/addons/":"../vendor/three/addons/"}}</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { loadGrandpa, loadFisherman } from '../src/character/grandpa.js';
+
+const qs = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(1);
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fb3c4);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.35;
+const cam = new THREE.PerspectiveCamera(Number(qs.get('fov') || 30), innerWidth / innerHeight, 0.01, 50);
+const sun = new THREE.DirectionalLight(0xfff0dc, 2.6);
+sun.position.set(-1.5, 3, 2.5);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -1.2; sun.shadow.camera.right = 1.2; sun.shadow.camera.top = 2; sun.shadow.camera.bottom = -0.2;
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.01;
+scene.add(sun);
+scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x5a6b3a, 0.9));
+
+const g = qs.get('char') === 'fisherman' ? await loadFisherman() : await loadGrandpa();
+scene.add(g.group);
+for (const k of Object.keys(g.face)) if (qs.has(k)) g.face[k] = Number(qs.get(k));
+const view = qs.get('view') || 'face';
+const head = g.bones.head;
+g.group.updateMatrixWorld(true);
+const hp = new THREE.Vector3().setFromMatrixPosition(head.matrixWorld);
+const hz = new THREE.Vector3().setFromMatrixColumn(head.matrixWorld, 2);
+let target = hp.clone().add(new THREE.Vector3(0, 0.07, 0));
+if (view === 'face') {
+  cam.position.copy(target).add(hz.clone().multiplyScalar(0.55));
+} else if (view === 'side') {
+  const hx = new THREE.Vector3().setFromMatrixColumn(head.matrixWorld, 0);
+  cam.position.copy(target).add(hx.multiplyScalar(0.55)).add(hz.clone().multiplyScalar(0.15));
+} else if (view === 'body') {
+  target = new THREE.Vector3(-0.1, 0.25, 0.2);
+  cam.position.set(-0.3, 0.6, 2.4);
+} else if (view === 'full') {
+  // whole standing character (fisherman)
+  target = new THREE.Vector3(0, 0.9, 0);
+  cam.position.set(0, 1.0, 4.6);
+} else if (view === 'player') {
+  // roughly where the player stands relative to the hip point
+  target = hp.clone().add(new THREE.Vector3(0, -0.15, 0));
+  cam.position.set(0.0, 0.65, 1.55);
+}
+if (qs.has('yaw')) { const a = Number(qs.get('yaw')) * Math.PI / 180; cam.position.sub(target).applyAxisAngle(new THREE.Vector3(0, 1, 0), a).add(target); }
+g.gazeTarget.copy(cam.position);
+const controls = new OrbitControls(cam, renderer.domElement);
+controls.target.copy(target);
+controls.update();
+const clock = new THREE.Clock();
+function frame() {
+  const dt = Math.min(clock.getDelta(), 0.05);
+  g.applyFace(dt);
+  renderer.render(scene, cam);
+  requestAnimationFrame(frame);
+}
+for (let i = 0; i < 30; i++) g.applyFace(0.05);
+frame();
+setTimeout(() => { window.__ready = true; }, 500);
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); });
+</script>
+</body>
+</html>

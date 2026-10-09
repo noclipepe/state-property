@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#161a15">
+<title>STATE PROPERTY · Fisherman POV</title>
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="stylesheet" href="src/ui/style.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <canvas id="view"></canvas>
+
+    <!-- loading -->
+    <div id="loading" class="overlay">
+      <div class="load-box">
+        <div class="load-title">Private Property</div>
+        <div class="load-bar"><div id="load-fill"></div></div>
+        <div id="load-text">Loading…</div>
+      </div>
+    </div>
+
+    <!-- start -->
+    <div id="start" class="overlay hidden">
+      <button id="btn-go" class="go">GO FISHING</button>
+      <div class="start-sub">Sound on · Drag to look · Tap a target to cast</div>
+      <a class="mode-link" href="./">‹ All games</a>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="top-bar">
+        <button id="btn-mute" class="icon-btn" aria-label="Mute" title="Mute (M)"><span class="ico-sound"></span></button>
+        <div class="top-right">
+          <button id="btn-reset" class="pill-btn" title="Restart (R)">Restart</button>
+          <button id="btn-menu" class="pill-btn" aria-haspopup="true" title="Modes">Modes</button>
+        </div>
+      </div>
+      <div id="menu" class="menu hidden">
+        <button data-act="showcase">Truck Showcase</button>
+        <button data-act="record">Record Mode</button>
+        <button data-act="intro">Replay Intro</button>
+        <button data-act="games">Back to games</button>
+      </div>
+      <button id="btn-skip" class="pill-btn skip hidden">Skip intro ›</button>
+      <div id="target-labels"></div>
+      <div id="tension" class="tension hidden"><div id="tension-fill"></div></div>
+      <div id="subtitle" class="subtitle"></div>
+      <div id="hint" class="hint"></div>
+      <div id="stick" class="stick touch-only"><div class="stick-knob"></div></div>
+      <div class="rod-controls">
+        <button id="btn-release" class="round-btn small hidden" title="Release hook (X)">Release</button>
+        <button id="btn-reel" class="round-btn reel hidden" title="Hold to reel (Space)"><span>REEL</span></button>
+      </div>
+      <div id="rec-badge" class="rec-badge hidden">REC · <button id="btn-rec-reset">restart</button> · <button id="btn-rec-show">showcase</button> · <button id="btn-rec-exit">exit</button></div>
+    </div>
+  </div>
+</div>
+<noscript>This game needs JavaScript and WebGL.</noscript>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

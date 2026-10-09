@@ -1,0 +1,32 @@
+{
+  "name": "state-property",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Two playable perspectives on the State Property meme. Built for desktop and mobile.",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "bake": "node tools/bake-character.mjs && node tools/bake-truck.mjs && node tools/bake-props.mjs && node tools/bake-fisherman.mjs",
+    "bake:character": "node tools/bake-character.mjs",
+    "bake:truck": "node tools/bake-truck.mjs",
+    "bake:fisherman": "node tools/bake-fisherman.mjs",
+    "check": "node tools/check.mjs",
+    "verify": "node tools/verify-controls.mjs",
+    "verify:restart": "node tools/verify-restart.mjs",
+    "verify:driver": "node tools/verify-driver.mjs",
+    "verify:hub": "node tools/verify-hub.mjs",
+    "build": "node tools/build.mjs",
+    "serve:dist": "node tools/serve.mjs 8090 dist",
+    "previews": "node tools/capture-previews.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "meshoptimizer": "^1.3.0",
+    "playwright": "^1.63.0"
+  },
+  "engines": {
+    "node": ">=22.2"
+  }
+}

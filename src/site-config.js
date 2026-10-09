@@ -1,0 +1,40 @@
+// Public release settings for the STATE PROPERTY series. Edit this one object: the games in the
+// menu, creator links, the public URL used for share metadata, and analytics.
+// The build (tools/build.mjs) reads it too: it publishes every available game's page and writes
+// the share metadata.
+export const SITE = {
+  title: 'STATE PROPERTY',
+  subtitle: 'Choose your POV',
+  studio: 'noclipepe games',
+  handle: '@noclipepe',
+  description: 'Relive the "state property" meme from both sides: hook the pickup as the fisherman, or talk your way through it as the driver. Free browser games by @noclipepe.',
+
+  // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
+  // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
+  siteUrl: '',
+
+  links: {
+    instagram: 'https://www.instagram.com/noclipepe/', // primary destination
+    tiktok: 'https://www.tiktok.com/@noclipepe',
+    x: 'https://x.com/noclipepe',
+    reel: 'https://www.instagram.com/reel/DeP2NfbMGPl/', // the driver POV reel
+  },
+
+  // The series menu (index.html), in this order. To add a game later, add an entry:
+  //   id         unique, lowercase
+  //   title      shown on the card
+  //   tagline    a few words under the title
+  //   image      card screenshot, 16:10 (assets/brand/card-<id>.jpg; tools/capture-previews.mjs makes them)
+  //   available  false shows the card greyed out with "Not available yet" and no PLAY button
+  //   launch     { page: 'x.html' } a game page in this project (the build publishes it), or
+  //              { url: 'https://…' } a game hosted elsewhere
+  games: [
+    { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
+    { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
+  ],
+
+  // Analytics adapter, off by default (no events are collected). See README > Analytics.
+  // provider: null | 'plausible' | 'umami' | 'gtag' | 'custom'
+  // For 'custom', set window.noclipepeTrack = (name, props) => { … } before the game loads.
+  analytics: { provider: null },
+};
