@@ -4,8 +4,9 @@
 // The menu: cards from SITE.games with screenshots and PLAY, no 3D loaded, brand font, the
 // NEW GAMES & UPDATES block (Instagram, X, >= 44 px), an unavailable game shown greyed out with no
 // PLAY. Launch Driver POV -> back to games (sound stopped) -> Fisherman POV -> back -> Driver again.
+// The "??? POV" teaser card: COMING SOON, no PLAY, "Get notified" to Instagram.
 // Layout: phones 360x800 / 390x844 / 430x932 portrait (cards stacked, everything on one screen),
-// 844x390 landscape and 1280x800 desktop (cards side by side).
+// 844x390 and 667x375 landscape and 1280x800 desktop (cards side by side).
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 
@@ -36,7 +37,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
     const cards = [...document.querySelectorAll('.card')];
     await Promise.all([...document.images].map((i) => (i.complete ? 0 : new Promise((r) => { i.onload = i.onerror = r; }))));
     return {
-      cards: cards.map((c) => ({ id: c.dataset.game, title: c.querySelector('.card-title').textContent, play: c.querySelector('.btn-play')?.getAttribute('href'), img: c.querySelector('img').naturalWidth })),
+      cards: cards.map((c) => ({ id: c.dataset.game, title: c.querySelector('.card-title').textContent, play: c.querySelector('.btn-play')?.getAttribute('href') ?? 'undefined', img: c.querySelector('img').naturalWidth })),
       three: performance.getEntriesByType('resource').some((r) => /three\.(module|core)\.js|meshes\//.test(r.name)),
       canvas: document.querySelectorAll('canvas').length,
       font: [...document.fonts].some((f) => f.family.includes('NewRodin') && f.status === 'loaded') && /NewRodin/.test(getComputedStyle(document.querySelector('.hub-title')).fontFamily),
@@ -46,7 +47,9 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
       sideBySide: cards.length > 1 && Math.abs(cards[0].getBoundingClientRect().top - cards[1].getBoundingClientRect().top) < 2,
     };
   });
-  check('menu: Fisherman POV and Driver POV cards with screenshots and PLAY', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html,DRIVER POV>driver.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
+  check('menu: Fisherman POV and Driver POV cards with screenshots and PLAY, then the ??? POV teaser', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html,DRIVER POV>driver.html,??? POV>undefined' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
+  const teaser = await page.evaluate(() => { const c = document.querySelector('.card.teaser'); const n = c?.querySelector('.notify'); return { badge: c?.querySelector('.soon-badge')?.textContent, play: !!c?.querySelector('.btn-play'), href: n?.href, h: n?.offsetHeight }; });
+  check('teaser: COMING SOON, no PLAY, "Get notified" to Instagram (>= 44 px)', teaser.badge === 'COMING SOON' && !teaser.play && teaser.href === 'https://www.instagram.com/noclipepe/' && teaser.h >= 44, JSON.stringify(teaser));
   check('menu loads no 3D (no three.js, meshes or canvas)', !hub.three && hub.canvas === 0);
   check('menu uses the brand font and the supplied background', hub.font && /assets\/brand\/background/.test(hub.bg));
   check('NEW GAMES & UPDATES: Instagram + X, labelled, >= 44 px', hub.social.map((s) => s.k).join() === 'instagram,x' && hub.social[0].href === 'https://www.instagram.com/noclipepe/' && hub.social[1].href === 'https://x.com/noclipepe' && hub.social.every((s) => s.w >= 44 && s.h >= 44 && s.label), JSON.stringify(hub.social.map((s) => [s.label, s.w, s.h])));
@@ -54,7 +57,8 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   check('opening the menu tracks nothing', hub.events === 0);
   await page.click('.social-btn[data-link=instagram]');
   await page.click('.social-btn[data-link=x]');
-  check('Instagram + X clicks are tracked', (await page.evaluate(() => window.__events.map((e) => e.name).join())) === 'instagram_clicked,x_clicked');
+  await page.click('.card.teaser .notify');
+  check('Instagram + X clicks are tracked (teaser too)', (await page.evaluate(() => window.__events.map((e) => e.name + (e.props.from === 'teaser' ? ':teaser' : '')).join())) === 'instagram_clicked,x_clicked,instagram_clicked:teaser');
   await page.screenshot({ path: `${out}/hub-desktop.png` });
 
   // ---- Driver POV, back, Fisherman POV, back, Driver POV again
@@ -66,7 +70,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.evaluate(() => addEventListener('pagehide', () => sessionStorage.setItem('exitAudio', window.__game.audio.ctx.state)));
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-games')]);
   await hubReady(page);
-  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 2);
+  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 3);
 
   await Promise.all([page.waitForURL(/fisherman\.html$/), page.click('.card[data-game=fisherman] .btn-play')]);
   await page.waitForFunction(() => window.__ready === true && window.__game?.mode === 'title', null, { timeout: 90000 });
@@ -90,7 +94,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.waitForFunction(() => !document.getElementById('end').hidden, null, { timeout: 20000 });
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-other')]);
   await hubReady(page);
-  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 2);
+  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 3);
   await ctx.close();
 }
 
@@ -110,7 +114,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
 }
 
 // =================================================================== layouts
-for (const [w, h, label] of [[360, 800, 'phone'], [390, 844, 'phone'], [430, 932, 'phone'], [844, 390, 'landscape']]) {
+for (const [w, h, label] of [[360, 800, 'phone'], [390, 844, 'phone'], [430, 932, 'phone'], [844, 390, 'landscape'], [667, 375, 'landscape']]) {
   const { ctx, page } = await newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await page.goto(BASE);
   await hubReady(page);
@@ -121,7 +125,7 @@ for (const [w, h, label] of [[360, 800, 'phone'], [390, 844, 'phone'], [430, 932
     const social = [...document.querySelectorAll('.social-btn')].map(r);
     return {
       fits: document.scrollingElement.scrollHeight <= innerHeight + 1,
-      stacked: cards[1].top >= cards[0].bottom, side: Math.abs(cards[0].top - cards[1].top) < 2,
+      stacked: cards.every((c, i) => i === 0 || c.top >= cards[i - 1].bottom), side: cards.every((c) => Math.abs(c.top - cards[0].top) < 2),
       plays: plays.every((p) => p.height >= 48), social: social.every((s) => s.height >= 44 && s.width >= 44),
       bottom: Math.round(social[0].bottom), h: innerHeight,
     };

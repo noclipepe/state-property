@@ -26,11 +26,15 @@ export const SITE = {
   //   tagline    a few words under the title
   //   image      card screenshot, 16:10 (assets/brand/card-<id>.jpg; tools/capture-previews.mjs makes them)
   //   available  false shows the card greyed out with "Not available yet" and no PLAY button
+  //   teaser     true (with available: false): a "COMING SOON" announcement card with a
+  //              "Get notified" button to Instagram instead of the greyed-out look. When the game
+  //              is ready, give it a real title, image and launch, and set available: true.
   //   launch     { page: 'x.html' } a game page in this project (the build publishes it), or
   //              { url: 'https://…' } a game hosted elsewhere
   games: [
     { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
     { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
+    { id: 'next', title: '??? POV', tagline: 'Someone else saw everything.', image: 'assets/brand/card-mystery.jpg', available: false, teaser: true },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.

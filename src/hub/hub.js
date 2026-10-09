@@ -8,13 +8,14 @@ for (const g of SITE.games) {
   const target = g.launch?.page || g.launch?.url;
   const live = g.available && !!target;
   const card = document.createElement('article');
-  card.className = 'card' + (live ? '' : ' off');
+  card.className = 'card' + (live ? '' : g.teaser ? ' teaser' : ' off');
   card.dataset.game = g.id;
 
   const shot = document.createElement('div');
   shot.className = 'card-img';
   const img = document.createElement('img');
-  img.src = g.image; img.alt = `${g.title} screenshot`; img.width = 640; img.height = 400; img.decoding = 'async';
+  img.src = g.image; img.alt = g.teaser ? 'A mystery: the pickup in the dark, and a question mark' : `${g.title} screenshot`;
+  img.width = 640; img.height = 400; img.decoding = 'async';
   shot.append(img);
 
   const body = document.createElement('div');
@@ -29,6 +30,18 @@ for (const g of SITE.games) {
     a.setAttribute('aria-label', `Play ${g.title}`);
     a.addEventListener('click', () => { track('game_selected', { game: g.id }); a.classList.add('going'); });
     body.append(a);
+  } else if (g.teaser) {
+    // an announcement: no PLAY, a reason to follow instead
+    const s = document.createElement('p');
+    s.className = 'soon-badge'; s.textContent = 'COMING SOON';
+    body.prepend(s);
+    if (SITE.links.instagram) {
+      const a = document.createElement('a');
+      a.className = 'notify'; a.href = SITE.links.instagram; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'Get notified';
+      a.addEventListener('click', () => track('instagram_clicked', { from: 'teaser' }));
+      body.append(a);
+    }
   } else {
     const s = document.createElement('p');
     s.className = 'soon'; s.textContent = 'Not available yet';

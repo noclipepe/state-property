@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Teaser card</title>
+<!-- 720x450 "??? POV" card for the series menu, rendered by tools/capture-previews.mjs, which
+     puts a frame from the game (seen from the reeds by the pond) into .shot -->
+<style>
+  @font-face { font-family: 'NewRodin Pro'; src: url('../assets/brand/newrodin-db.woff2') format('woff2'); font-weight: 100 900; font-display: block; }
+  html, body { margin: 0; width: 720px; height: 450px; overflow: hidden; background: #1c1838; }
+  .wrap { position: relative; width: 720px; height: 450px; overflow: hidden; }
+  .shot { position: absolute; inset: -12px; width: calc(100% + 24px); height: calc(100% + 24px); object-fit: cover;
+    filter: grayscale(0.55) brightness(0.42) contrast(1.15) blur(2.5px); }
+  .tint { position: absolute; inset: 0; background: linear-gradient(160deg, rgba(121,114,189,0.55), rgba(40,30,95,0.35) 55%, rgba(20,14,50,0.7));
+    mix-blend-mode: multiply; }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 30%, rgba(12,8,32,0.78) 100%); }
+  .glow { position: absolute; left: 50%; top: 46%; width: 340px; height: 340px; transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(circle, rgba(216,197,243,0.35), rgba(216,197,243,0) 65%); }
+  .q { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font: 400 250px/1 'NewRodin Pro', sans-serif;
+    color: rgba(251,240,255,0.92); text-shadow: 0 0 24px rgba(216,197,243,0.9), 0 0 70px rgba(121,114,189,0.9); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img class="shot" alt="">
+    <div class="tint"></div>
+    <div class="vignette"></div>
+    <div class="glow"></div>
+    <div class="q">?</div>
+  </div>
+</body>
+</html>

@@ -31,21 +31,40 @@ html, body.hub-page { overflow: auto; height: auto; min-height: 100%; }
 .soon { margin: 8px 0 0; justify-self: start; padding: 8px 12px; border-radius: 999px; font: 400 13px/1 var(--font); color: var(--ink-soft);
   background: rgba(255,255,255,0.45); border: 1px dashed rgba(74,69,146,0.45); }
 
+/* the "??? POV" announcement: darker glass, a soft pulse on the picture, no PLAY */
+.card.teaser { background: linear-gradient(180deg, rgba(60,50,130,0.55), rgba(30,24,72,0.55)); border-color: rgba(216,197,243,0.7); color: #fff; }
+.card.teaser .card-title { color: #fff; letter-spacing: 0.04em; }
+.card.teaser .card-tag { color: rgba(255,255,255,0.82); font-style: italic; }
+.card.teaser .card-img { border-color: rgba(216,197,243,0.8); }
+.card.teaser .card-img img { animation: tease 3.2s ease-in-out infinite; }
+@keyframes tease { 50% { filter: brightness(1.25) saturate(1.2); } }
+.soon-badge { margin: 0 0 2px; justify-self: start; padding: 5px 9px; border-radius: 999px; font: 400 11px/1 var(--font); letter-spacing: 0.1em;
+  color: var(--violet-dark); background: linear-gradient(180deg, #fff, var(--bg-light)); box-shadow: 0 0 12px rgba(216,197,243,0.7); }
+.notify { margin: 8px 0 0; display: grid; place-items: center; min-height: 44px; border-radius: 999px; text-decoration: none; color: #fff;
+  font: 400 16px/1 var(--font); border: 1px solid rgba(255,255,255,0.75); background: rgba(255,255,255,0.12); transition: transform 0.1s, background 0.15s; }
+.notify:hover { background: rgba(255,255,255,0.22); }
+.notify:active { transform: scale(0.97); }
+
 /* wide screens: the cards side by side, picture on top */
 @media (min-width: 640px) {
   .cards { max-width: 820px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
   .card { grid-template-columns: 1fr; padding: 12px; }
   .card-body { text-align: center; justify-items: center; }
   .card .btn-play { width: 100%; }
-  .soon { justify-self: center; }
+  .soon, .soon-badge { justify-self: center; }
 }
 /* phones held sideways: a compact single row */
 @media (orientation: landscape) and (max-height: 540px) {
   .hub { gap: 10px; padding-top: calc(var(--safe-t) + 12px); padding-bottom: calc(var(--safe-b) + 12px); }
   .hub-title { font-size: 30px; }
   .hub-choose { display: none; }
-  .cards { max-width: 820px; grid-template-columns: 1fr 1fr; }
-  .card { grid-template-columns: 46% 1fr; padding: 8px; }
+  .cards { max-width: 920px; grid-template-columns: repeat(auto-fit, minmax(186px, 1fr)); gap: 8px; }
+  .card { grid-template-columns: 42% 1fr; gap: 8px; padding: 7px; }
   .card-body { text-align: left; justify-items: stretch; }
+  .card-title { font-size: 15px; }
+  .card-tag { display: none; }
+  .card .btn-play { font-size: 18px; margin-top: 4px; }
+  .soon-badge { font-size: 9px; padding: 4px 7px; }
+  .notify { font-size: 14px; margin-top: 4px; }
 }
-@media (prefers-reduced-motion: reduce) { .card-img img, .card { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .card-img img, .card { transition: none; } .card.teaser .card-img img { animation: none; } }
