@@ -47,7 +47,8 @@ const pages = ['index.html', ...SITE.games.filter((g) => g.available && g.launch
 const entries = [];
 for (const page of pages) {
   let html = fs.readFileSync(path.join(ROOT, page), 'utf8');
-  const pageVars = { ...vars, pageUrl: base && base + (page === 'index.html' ? '' : page) };
+  // Cloudflare Pages serves /driver.html at /driver (308 redirect): canonical points at the final address
+  const pageVars = { ...vars, pageUrl: base && base + (page === 'index.html' ? '' : page.replace(/\.html$/, '')) };
   html = html.replace(/\{\{(\w+)\}\}/g, (_, k) => esc(pageVars[k] ?? ''));
   // unknown until SITE.siteUrl is set
   if (!base) html = html.replace(/\s*<meta property="og:url" content="">/, '').replace(/\s*<link rel="canonical" href="">/, '');
