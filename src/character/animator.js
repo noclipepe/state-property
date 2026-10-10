@@ -281,9 +281,11 @@ export class GrandpaAnimator {
     const F = this.#dirToWorld(pose.f, new THREE.Vector3()).normalize();
     const N = this.#dirToWorld(pose.n, new THREE.Vector3()).normalize();
     const Pp = this.#dirToWorld(pose.p, new THREE.Vector3()).normalize();
-    const la = 0.30, lb = 0.255;
+    // IK targets and shoulder positions are in world space, including vehicle shrink.
+    const scale = this.g.group.getWorldScale(new THREE.Vector3()).x;
+    const la = 0.30 * scale, lb = 0.255 * scale;
     const D = W.clone().sub(S);
-    const d = THREE.MathUtils.clamp(D.length(), 0.1, la + lb - 0.004);
+    const d = THREE.MathUtils.clamp(D.length(), 0.1 * scale, la + lb - 0.004 * scale);
     D.normalize();
     const Wc = S.clone().addScaledVector(D, d);
     const cosA = THREE.MathUtils.clamp((la * la + d * d - lb * lb) / (2 * la * d), -1, 1);

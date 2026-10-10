@@ -146,6 +146,7 @@ export class Bucket {
   }
 
   reset() {
+    this.root.scale.setScalar(1);
     this.root.position.copy(this.home); this.root.quaternion.identity(); this.spilled = false;
     this.filled.value = 1;
     this.handle.rotation.x = 0;

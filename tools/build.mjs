@@ -10,7 +10,7 @@
 //     driver POV never shows (grandpa's head, hair, brows and mustache: the camera is his eyes;
 //     the first-person hand), the fisherman page keeps the full ones
 //   - writes _headers (caching + basic security headers) and checks Cloudflare's 25 MiB file limit
-// Nothing from tools/, dev/ or node_modules is published.
+// Nothing from tools/, dev/, the reference video, transcripts or node_modules is published.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -80,7 +80,7 @@ copy('vendor/three/LICENSE', 'vendor/three/LICENSE.txt');
 
 // ------------------------------------------------------------------ assets
 for (const f of fs.readdirSync(path.join(ROOT, 'assets/brand'))) copy('assets/brand/' + f);
-for (const set of ['driver_dialogue.json', 'dialogue.json']) { // driver POV, fisherman POV
+for (const set of ['driver_dialogue.json', 'dialogue.json', 'gru_dialogue.json']) {
   const lines = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/audio', set), 'utf8'));
   copy('assets/audio/' + set);
   for (const line of Object.values(lines)) copy(line.file);
@@ -130,6 +130,7 @@ function repack(name, drop = [], as = name) {
 }
 const packs = {
   truck: repack('truck'),
+  gru: repack('gru'),
   grandpa: repack('grandpa'),
   'grandpa-driver': repack('grandpa', ['head', 'hair', 'brows', 'mustache'], 'grandpa-driver'),
   fisherman: repack('fisherman'),

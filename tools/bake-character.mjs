@@ -9,7 +9,8 @@ import { createNoise3D, fbm } from './lib/noise.mjs';
 import { simplifyMesh } from './lib/simplify.mjs';
 import { fileURLToPath } from 'node:url';
 
-const OUT = fileURLToPath(new URL('../assets/meshes/grandpa', import.meta.url));
+const GRU = process.argv.includes('--gru');
+const OUT = fileURLToPath(new URL(`../assets/meshes/${GRU ? 'gru' : 'grandpa'}`, import.meta.url));
 const noise = createNoise3D(7);
 const noise2 = createNoise3D(19);
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -152,6 +153,7 @@ const C = {
   shoe: [0.15, 0.12, 0.10],
   hair: [0.88, 0.87, 0.84],
 };
+if (GRU) Object.assign(C, { skin: [0.72, 0.49, 0.40], skinArm: [0.72, 0.49, 0.40], shirt: [0.065, 0.072, 0.082], pants: [0.045, 0.049, 0.055], hair: [0.075, 0.052, 0.038] });
 
 // shirt fabric displacement: broad folds + fine creases
 const shirtDisp = (amp) => (x, y, z) =>
@@ -185,6 +187,11 @@ function buildTorso() {
   // sleeves
   for (const s of ['L', 'R']) {
     const sl = { ...shirt, bone: 'upperArm' + s, k: 0.035, sigma: 0.045 };
+    if (GRU) {
+      cone(m, 'upperArm' + s, [0, 0.01, 0], 'upperArm' + s, [0, -0.3, 0], 0.080, 0.056, sl);
+      cone(m, 'forearm' + s, [0, 0.01, 0], 'forearm' + s, [0, -0.235, 0], 0.057, 0.039, { ...shirt, k: 0.035, sigma: 0.045 });
+      continue;
+    }
     prim(m, 'sphere', { r: 0.072 }, 'upperArm' + s, [0, -0.01, 0], [0, 0, 0], { ...sl, sigma: 0.06 });
     cone(m, 'upperArm' + s, [0, -0.01, 0], 'upperArm' + s, [0, -0.175, 0.004], 0.07, 0.061, { ...sl, uv: 'limb' });
     // hem opening
@@ -196,6 +203,7 @@ function buildTorso() {
     prim(m, 'box', { hx: 0.03, hy: 0.04, hz: 0.004, r: 0.0035 }, 'chest', [0.035 * s, 0.205, 0.095], [-48, 22 * s, 32 * s], { ...shirt, disp: null, dispAmp: 0, k: 0.008, sigma: 0.03 });
   }
   // pocket on his left chest + pen
+  if (GRU) return m;
   prim(m, 'box', { hx: 0.054, hy: 0.06, hz: 0.006, r: 0.004 }, 'chest', [0.085, 0.095, 0.128], [-6, 20, 0], { ...shirt, disp: null, dispAmp: 0, k: 0.004, sigma: 0.05, tag: 'pocket' });
   prim(m, 'cyl', { r: 0.0055, h: 0.03, rr: 0.002 }, 'chest', [0.105, 0.150, 0.130], [-6, 20, 0], { mat: 'pen', color: [0.85, 0.85, 0.86], k: 0.0, sigma: 0.05 });
   prim(m, 'box', { hx: 0.0015, hy: 0.018, hz: 0.002, r: 0.001 }, 'chest', [0.105, 0.150, 0.137], [-6, 20, 0], { mat: 'pen', color: [0.75, 0.75, 0.78], k: 0.0, sigma: 0.05 });
@@ -208,12 +216,14 @@ function buildArm(side) {
   const s = side === 'L' ? 1 : -1;
   const sk = { mat: 'skin', color: C.skinArm };
   const ua = 'upperArm' + side, fa = 'forearm' + side, hd = 'hand' + side;
+  if (!GRU) {
   cone(m, ua, [0, -0.04, 0], ua, [0, -0.30, 0], 0.050, 0.041, { ...sk, k: 0.02, sigma: 0.05 });
   prim(m, 'ellipsoid', { rx: 0.042, ry: 0.075, rz: 0.044 }, ua, [0.0, -0.17, 0.012], [0, 0, 0], { ...sk, k: 0.03, sigma: 0.05 });
   // forearm
   cone(m, fa, [0, 0.0, 0], fa, [0, -0.25, 0], 0.044, 0.028, { ...sk, k: 0.025, sigma: 0.05 });
   prim(m, 'ellipsoid', { rx: 0.047, ry: 0.085, rz: 0.040 }, fa, [0.004 * s, -0.075, 0.0], [0, 0, 0], { ...sk, k: 0.03, sigma: 0.05 });
   prim(m, 'sphere', { r: 0.03 }, fa, [0, 0.005, -0.018], [0, 0, 0], { ...sk, k: 0.02, sigma: 0.04 }); // elbow
+  }
   // wrist + palm
   cone(m, fa, [0, -0.235, 0], hd, [0, -0.02, 0], 0.028, 0.025, { ...sk, bone: hd, k: 0.012, sigma: 0.03 });
   prim(m, 'box', { hx: 0.0165, hy: 0.05, hz: 0.043, r: 0.015 }, hd, [0.001 * s, -0.052, 0.001], [0, 0, 0], { ...sk, k: 0.014, sigma: 0.025 });
@@ -310,6 +320,42 @@ function buildHead() {
   return m;
 }
 
+// The meme's human proportions: bare scalp, heavy brow, hooked nose and narrow lips.
+// Keep the shared facial bones so the original performance drives the new sculpt.
+function buildGruHead() {
+  const m = new Model(), sk = { mat: 'skin', color: C.skin };
+  const ell = (r, p, k = 0.018, rot = [0, 0, 0]) => hp(m, 'ellipsoid', { rx:r[0], ry:r[1], rz:r[2] }, p, rot, { ...sk, k });
+  ell([0.096, 0.094, 0.092], [0, 0.106, -0.017]);
+  ell([0.085, 0.065, 0.052], [0, 0.125, 0.040], 0.026);
+  ell([0.071, 0.067, 0.058], [0, 0.049, 0.039], 0.030);
+  for (const s of [1, -1]) {
+    ell([0.026, 0.014, 0.020], [s*0.030, 0.105, 0.084], 0.010, [0, 0, s*9]);
+    ell([0.016, 0.006, 0.011], [s*0.034, 0.073, 0.081], 0.008);
+    ell([0.032, 0.029, 0.025], [s*0.060, 0.060, 0.055], 0.026);
+    ell([0.027, 0.030, 0.023], [s*0.050, 0.022, 0.057], 0.024);
+    cone(m, 'head', [s*0.034, -0.023, 0.065], 'head', [s*0.072, 0.016, 0.002], 0.022, 0.024, { ...sk, k:0.022 });
+  }
+  // A long hooked bridge blends into the broad face and ends in a tapered tip.
+  cone(m, 'head', [0, 0.100, 0.089], 'head', [0, 0.050, 0.176], 0.016, 0.012, { ...sk, k:0.014 });
+  ell([0.013, 0.016, 0.020], [0, 0.043, 0.177], 0.012, [-28,0,0]);
+  cone(m, 'head', [0,0.041,0.114], 'head', [0,0.038,0.166], 0.016,0.011,{...sk,k:0.012});
+  for (const s of [1,-1]) ell([0.010,0.008,0.014], [s*0.016,0.043,0.128],0.010);
+  ell([0.026,0.012,0.012], [0,0.027,0.100],0.013);
+  ell([0.021,0.007,0.009], [0,0.009,0.101],0.008);
+  ell([0.038,0.023,0.026], [0,-0.017,0.078],0.025);
+  ell([0.051,0.025,0.039], [0,-0.027,0.030],0.025);
+  cone(m,'head',[0,0.025,-0.020],'neck',[0,-0.012,0],0.055,0.062,{...sk,bone:'neck',k:0.025,sigma:0.05});
+  for (const s of [1,-1]) {
+    ell([0.013,0.029,0.021],[s*0.098,0.074,-0.012],0.006,[-10,s*20,s*6]);
+    hp(m,'ellipsoid',{rx:0.008,ry:0.018,rz:0.011},[s*0.107,0.077,-0.010],[0,s*20,0],{op:'sub',k:0.003});
+    hp(m,'sphere',{r:0.0153},[s*EYE.x,EYE.y,EYE.z+0.0015],[0,0,0],{op:'sub',k:0.004});
+    hp(m,'ellipsoid',{rx:0.004,ry:0.003,rz:0.007},[s*0.012,0.035,0.145],[15,0,0],{op:'sub',k:0.002});
+    cone(m,'head',[s*0.020,0.046,0.110],'head',[s*0.032,0.007,0.095],0.0014,0.0013,{op:'sub',k:0.006});
+  }
+  hp(m,'box',{hx:0.024,hy:0.0009,hz:0.016,r:0.0008},[0,MOUTH_Y,0.107],[0,0,0],{op:'sub',k:0.0016});
+  return m;
+}
+
 // head-local surface query: z of the front surface at (x, y)
 function surfZ(model, x, y, z0 = 0.16) {
   let z = z0;
@@ -341,7 +387,7 @@ function headDetail(lp) {
   d += neckM * 0.0008 * Math.sin(y * 330 + 3.0 * Math.sin(x * 40));
   // general skin unevenness
   d += 0.00025 * fbm(noise, x * 120, y * 120, z * 120, 2);
-  return d;
+  return GRU ? d * 0.38 : d;
 }
 function smooth(a, b, x) { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); }
 
@@ -372,11 +418,12 @@ function buildBrows(headModel) {
   const o = { mat: 'hair', color: C.hair, k: 0.004, disp: (x, y, z) => 0.0005 * noise(x * 600, y * 250, z * 600), dispAmp: 0.001 };
   for (const s of [1, -1]) {
     const side = s > 0 ? 'L' : 'R';
-    const P = [[0.011, 0.1075], [0.022, 0.1095], [0.033, 0.110], [0.044, 0.1075], [0.053, 0.1025]].map(([x, y]) => [x * s, y, surfZ(headModel, x * s, y) + 0.0010]);
+    const brow = GRU ? [[0.010,0.103],[0.023,0.110],[0.036,0.114],[0.050,0.112],[0.063,0.106]] : [[0.011,0.1075],[0.022,0.1095],[0.033,0.110],[0.044,0.1075],[0.053,0.1025]];
+    const P = brow.map(([x, y]) => [x * s, y, surfZ(headModel, x * s, y) + 0.0010]);
     for (let i = 0; i < P.length - 1; i++) {
       const bone = i < 2 ? 'browIn' + side : 'browOut' + side;
       const ra = [0.0030, 0.0033, 0.0032, 0.0027, 0.0021][i], rb = [0.0033, 0.0032, 0.0027, 0.0021, 0.0016][i];
-      cone(m, 'head', P[i], 'head', P[i + 1], ra, rb, { ...o, bone });
+      cone(m, 'head', P[i], 'head', P[i + 1], ra*(GRU?1.3:1), rb*(GRU?1.3:1), { ...o, bone });
     }
   }
   return m;
@@ -557,10 +604,10 @@ function headPaint(wp, col, best) {
   // neck a little tanned
   mix(0.35 * smooth(0.0, -0.05, p.y) * smooth(-0.02, 0.03, -p.z + 0.05), [0.74, 0.50, 0.40]);
   // short hair tint on the scalp under the fringe
-  { const hr = hairRegion(p); const t = Math.max(0, Math.min(1, (-hr + 0.002) / 0.008)); mix(0.55 * t, [0.78, 0.74, 0.70]); }
+  if (!GRU) { const hr = hairRegion(p); const t = Math.max(0, Math.min(1, (-hr + 0.002) / 0.008)); mix(0.55 * t, [0.78, 0.74, 0.70]); }
   // age spots / freckles
   const sp = fbm(noise2, p.x * 90, p.y * 90, p.z * 90, 2);
-  if (sp > 0.38) mix(Math.min(0.35, (sp - 0.38) * 3), [0.62, 0.42, 0.30]);
+  if (!GRU && sp > 0.38) mix(Math.min(0.35, (sp - 0.38) * 3), [0.62, 0.42, 0.30]);
   // fine mottling
   const mn = noise(p.x * 300, p.y * 300, p.z * 300) * 0.035;
   c = c.map((v, i) => v + mn * (i === 0 ? 1 : 0.6));
@@ -576,7 +623,7 @@ function armPaint(wp, col) {
 
 const torso = buildTorso();
 const armL = buildArm('L'), armR = buildArm('R');
-const headM = buildHead();
+const headM = GRU ? buildGruHead() : buildHead();
 const all = new Model();
 for (const mm of [torso, armL, armR, headM]) for (const p of mm.prims) if (p.op === 'add') all.add(p);
 
@@ -585,6 +632,7 @@ meshes.push(bake('torso', torso, 0.0055, { tris: 32000, err: 0.0012, uv: fabricU
 meshes.push(bake('armL', armL, 0.0024, { tris: 14000, err: 0.0006, aoModel: all, aoScale: 0.01, paint: armPaint }));
 meshes.push(bake('armR', armR, 0.0024, { tris: 14000, err: 0.0006, aoModel: all, aoScale: 0.01, paint: armPaint }));
 meshes.push(bake('head', headM, 0.0013, { tris: 34000, err: 0.00025, aoModel: all, aoScale: 0.006, weightFn: W_FACE, paint: headPaint, detail: headDetail, detailInv: headInv }));
+if (!GRU) {
 const must = buildMustache(headM);
 meshes.push(bake('mustache', must, 0.0009, { tris: 5000, err: 0.0003, weightFn: (wp, wl) => {
   const lp = wp.clone().applyMatrix4(headInv);
@@ -592,8 +640,9 @@ meshes.push(bake('mustache', must, 0.0009, { tris: 5000, err: 0.0003, weightFn: 
   const t = smooth(0.006, 0.026, Math.abs(lp.x));
   return [['head', 1 - 0.6 * t], ['mouth' + side, 0.6 * t]];
 }, aoScale: 0.004 }));
+}
 meshes.push(bake('brows', buildBrows(headM), 0.0008, { tris: 2000, err: 0.0002, aoScale: 0.003 }));
-meshes.push(bake('hair', buildHair(headM), 0.0012, { tris: 12000, err: 0.0004, alphaFn: (wp) => Math.max(0, Math.min(1, -hairRegion(wp.clone().applyMatrix4(headInv)) / 0.010 + 0.4)), bounds: (() => { const c = toWorld(B.head, [0, 0.1, -0.01]); return { min: [c.x - 0.13, c.y - 0.13, c.z - 0.13], max: [c.x + 0.13, c.y + 0.13, c.z + 0.13] }; })(), aoModel: all, aoScale: 0.004 }));
+if (!GRU) meshes.push(bake('hair', buildHair(headM), 0.0012, { tris: 12000, err: 0.0004, alphaFn: (wp) => Math.max(0, Math.min(1, -hairRegion(wp.clone().applyMatrix4(headInv)) / 0.010 + 0.4)), bounds: (() => { const c = toWorld(B.head, [0, 0.1, -0.01]); return { min: [c.x - 0.13, c.y - 0.13, c.z - 0.13], max: [c.x + 0.13, c.y + 0.13, c.z + 0.13] }; })(), aoModel: all, aoScale: 0.004 }));
 
 // skeleton export (local transforms)
 const boneOut = bones.map((b) => {

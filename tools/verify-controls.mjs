@@ -43,6 +43,8 @@ check('subtitles ignore pointer input', pe === 'none', pe);
 // cast + reel while he talks
 await ev(() => { const g = window.__game; g.player.setPose({ x: -0.3, z: 1.74, yaw: -0.17, pitch: -0.27 }); });
 await wait(100);
+// Wait for a complete voiced line rather than accidentally casting in an intro pause.
+await page.waitForFunction(() => window.__game.dialogue.current?.id === 'g_private', null, { timeout: 10000 });
 const castDuring = await ev(() => { const g = window.__game; g.fishing.cast(g.interactions.byId.sleeve); return g.dialogue.current?.id ?? null; });
 await wait(900);
 const a2 = await snap();

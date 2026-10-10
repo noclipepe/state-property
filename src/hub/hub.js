@@ -2,6 +2,7 @@
 // It loads no 3D: a game's page (and its scene) loads only after its PLAY is pressed.
 import { SITE } from '../site-config.js';
 import { track } from '../analytics.js';
+import { createFishermanSkinPicker } from './fisherman-skin.js';
 
 const list = document.getElementById('games');
 for (const g of SITE.games) {
@@ -30,6 +31,7 @@ for (const g of SITE.games) {
     a.className = 'btn-play'; a.href = target; a.textContent = 'PLAY';
     a.setAttribute('aria-label', `Play ${g.title}`);
     a.addEventListener('click', () => { track('game_selected', { game: g.id }); a.classList.add('going'); });
+    if (g.id === 'fisherman') body.append(createFishermanSkinPicker({ card, img, launch: a, originalImage: g.image }));
     body.append(a);
   } else if (g.teaser) {
     // an announcement: no PLAY, a reason to follow instead

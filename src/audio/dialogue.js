@@ -17,10 +17,11 @@ export class Dialogue {
     this.onLineStart = null;
     this.onLineEnd = null;
     this.subsEnabled = true;
+    this.voiceOptions = null;
   }
 
-  async load(baseUrl, onProgress) {
-    const res = await fetch(baseUrl + 'assets/audio/dialogue.json');
+  async load(baseUrl, onProgress, manifest = 'dialogue.json') {
+    const res = await fetch(baseUrl + 'assets/audio/' + manifest);
     this.lines = await res.json();
     const ids = Object.keys(this.lines);
     let done = 0;
@@ -33,6 +34,21 @@ export class Dialogue {
   now() { return this.audio.ctx.currentTime; }
   get speaking() { return !!this.current; }
   get grandpaSpeaking() { return !!this.current && this.lines[this.current.id].speaker === 'grandpa'; }
+
+  // Track the buffer playhead when a scene changes pitch during an existing line.
+  playbackTime() {
+    const c = this.current;
+    return c ? c.offset + (this.now() - c.rateAt) * c.rate : 0;
+  }
+
+  setPlaybackRate(rate) {
+    const c = this.current;
+    if (!c || Math.abs(c.rate - rate) < 0.00001) return;
+    const now = Math.max(this.now(), c.start);
+    c.offset += Math.max(0, now - c.rateAt) * c.rate;
+    c.rateAt = now; c.rate = rate;
+    c.src.playbackRate.setValueAtTime(rate, now);
+  }
 
   /**
    * Pick from a pool, honouring cooldowns. opts: {force, lineCooldown}
@@ -96,9 +112,12 @@ export class Dialogue {
   #play(id, opts = {}) {
     if (this.current) this.#stopCurrent();
     const line = this.lines[id];
-    const src = this.audio.playBuffer(this.buffers[id], this.audio.voice, 1.0);
+    const voice = this.voiceOptions?.(line) || {};
+    const src = this.audio.playBuffer(this.buffers[id], voice.bus || this.audio.voice, 1.0);
     const start = src.startTime;
-    this.current = { id, src, start, line };
+    const rate = voice.rate || 1;
+    src.playbackRate.setValueAtTime(rate, start);
+    this.current = { id, src, start, line, rate, rateAt:start, offset:0 };
     this.lastPlayed[id] = start;
     this.lastId = id;
     this.audio.setDucked(true);
@@ -154,7 +173,7 @@ export class Dialogue {
   // mouth openness 0..1 for the active grandpa line
   envelope() {
     if (!this.current || this.lines[this.current.id].speaker !== 'grandpa') return 0;
-    const t = this.now() - this.current.start;
+    const t = this.playbackTime();
     const env = this.current.line.env;
     const f = t * 50;
     const i = Math.floor(f);
@@ -166,7 +185,7 @@ export class Dialogue {
   update() {
     if (this._gapTimer && this.now() >= this._gapTimer.at) this._gapTimer.run();
     if (!this.current) return;
-    const t = this.now() - this.current.start;
+    const t = this.playbackTime();
     const cue = this.current.line.cues.find((c) => t >= c.t0 - 0.05 && t < c.t1 + 0.1);
     this.#setSubtitle(cue ? { text: cue.text, speaker: this.current.line.speaker } : null);
   }

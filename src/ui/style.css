@@ -108,3 +108,20 @@ body:not(.touch) .touch-only { display: none; }
 /* record mode: keep only what is needed */
 #stage.rec .hint, #stage.rec .top-bar, #stage.rec #target-labels, #stage.rec .tension, #stage.rec .stick { display: none !important; }
 #stage.rec .round-btn { opacity: 0.35; }
+
+/* The Gru action occupies the familiar reel control area on both input types. */
+.gru-mode .rod-controls { display:none; }
+.gru-action { position:absolute; right:4%; bottom:calc(4% + var(--safe-b)); width:86px; height:86px; border-color:#a5f1dd; }
+.gru-action:active { background:#82dccb; color:#152d29; }
+.gru-action:disabled { opacity:0.5; }
+.gru-take-label { position:absolute; transform:translate(-50%,-50%); min-width:66px; min-height:44px; height:44px; border-color:#a5f1dd; background:rgba(15,35,31,0.83); }
+.gru-mode [hidden] { display:none !important; }
+#ray-reticle { position:absolute; left:50%; top:50%; width:12px; height:12px; transform:translate(-50%,-50%); border:1px solid rgba(211,255,241,0.95); border-radius:50%; box-shadow:0 0 2px #16332c; }
+#ray-reticle::after { content:''; position:absolute; left:4px; top:4px; width:2px; height:2px; background:white; }
+.gru-replay { position:absolute; top:calc(14% + var(--safe-t)); left:50%; transform:translateX(-50%); display:flex; gap:8px; white-space:nowrap; }
+.gru-replay button { min-height:44px; }
+.gru-control { position:absolute; top:calc(9% + var(--safe-t)); left:50%; transform:translateX(-50%); min-height:44px; }
+.gru-mode.rec .gru-control { top:calc(7% + var(--safe-t)); opacity:0.5; font-size:10px; }
+.gru-mode .subtitle { bottom:calc(26% + var(--safe-b)); }
+.gru-sound { position:absolute; top:calc(16% + var(--safe-t)); left:50%; transform:translateX(-50%); min-height:44px; }
+@media (max-height:500px) { .gru-action { width:62px; height:62px; } .gru-control { top:54px; left:25%; } }

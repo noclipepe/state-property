@@ -35,7 +35,7 @@ export const SITE = {
   games: [
     { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
     { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
-    { id: 'fish', title: 'FISH POV', isNew: true, tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
+    { id: 'fish', title: 'FISH POV', tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.

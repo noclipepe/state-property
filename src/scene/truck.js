@@ -309,7 +309,7 @@ export class Truck {
 // Keeps fishing-line points out of the bodywork: a few boxes in truck-body space.
 // begin() once per frame (after the truck moved), then apply(p) per line point (world space).
 export function truckLineCollider(truck) {
-  const boxes = [
+  const boxes = truck.collisionBoxes || [
     { min: [-0.95, 0.40, -0.995], max: [2.74, 1.285, 0.995] },
     { min: [-2.78, 0.40, -0.995], max: [-0.95, 1.13, 0.995] },
     { min: [-0.40, 1.79, -0.86], max: [0.98, 1.89, 0.86] },
