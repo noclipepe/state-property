@@ -2,7 +2,7 @@
   "name": "state-property",
   "version": "1.0.0",
   "private": true,
-  "description": "Two playable perspectives on the State Property meme. Built for desktop and mobile.",
+  "description": "Three playable perspectives on the State Property meme. Built for desktop and mobile.",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
@@ -17,7 +17,10 @@
     "verify:hub": "node tools/verify-hub.mjs",
     "build": "node tools/build.mjs",
     "serve:dist": "node tools/serve.mjs 8090 dist",
-    "previews": "node tools/capture-previews.mjs"
+    "previews": "node tools/capture-previews.mjs",
+    "verify:fish": "node tools/verify-fish.mjs",
+    "verify:buckets": "node tools/verify-buckets.mjs",
+    "previews:fish": "node tools/capture-fish.mjs http://localhost:8085/ --card"
   },
   "dependencies": {
     "three": "^0.186.1"

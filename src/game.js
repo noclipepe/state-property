@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { createWorld } from './scene/world.js';
 import { loadTruck, truckLineCollider } from './scene/truck.js';
 import { Effects } from './scene/effects.js';
+import { addFishingBucket } from './scene/fishing-bucket.js';
 import { loadGrandpa } from './character/grandpa.js';
 import { GrandpaAnimator } from './character/animator.js';
 import { loadPack } from './util/pack.js';
@@ -24,6 +25,7 @@ export class Game {
     this.camera = new THREE.PerspectiveCamera(64, 9 / 16, 0.03, 600);
     this.size = { w: 1, h: 1 };
     this.mode = 'loading'; // loading | title | play  (the intro runs during play)
+    this.paused = false;
     this.introActive = false;
     this.clock = new THREE.Timer();
     this.ui = new UI(this);
@@ -58,6 +60,7 @@ export class Game {
     this.animator = new GrandpaAnimator(grandpa);
     this.world.pondCenter = this.scene.getObjectByName ? null : null;
     this.world.pondCenter = new THREE.Vector3(11, 0, 6.5);
+    addFishingBucket(this, { fishScale: 1.5 });
 
     // cabin fill: bounce light off the door/ground onto the driver's face
     const fill = new THREE.PointLight(0xffe2c4, 0.9, 1.6, 1.5);
@@ -133,10 +136,9 @@ export class Game {
     this.ui.showStart(true);
     this.mode = 'title';
     window.__ready = true;
-    // sound sleeps while the page is hidden (another app, a link, the series menu) and wakes on return
+    // Leaving the page freezes the scene and audio until the player presses RESUME.
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this.audio.suspend();
-      else if (this.mode === 'play') this.audio.resume().catch(() => {});
+      if (document.hidden) this.pause();
     });
     addEventListener('pagehide', () => this.audio.suspend());
     const loop = () => { this.#tick(); requestAnimationFrame(loop); };
@@ -215,13 +217,26 @@ export class Game {
 
   /** Modes -> Back to games: silence everything first, then leave for the series menu */
   backToGames() {
+    this.dialogue.stop();
     this.audio.suspend();
     location.href = './';
   }
 
   onEscape() {
-    if (this.recordMode) this.setRecordMode(false);
-    this.ui.closeMenu();
+    if (this.recordMode) { this.setRecordMode(false); return; }
+    this.paused ? this.resume() : this.pause();
+  }
+
+  pause() {
+    if (this.mode !== 'play' || this.paused) return;
+    this.paused = true; this.input.reset(); this.input.enabled = false;
+    this.audio.suspend(); this.ui.showPause(true);
+  }
+
+  resume() {
+    if (!this.paused) return;
+    this.paused = false; this.input.reset(); this.input.enabled = true;
+    this.audio.unlock(); this.ui.showPause(false);
   }
 
   setRecordMode(on) {
@@ -235,11 +250,15 @@ export class Game {
    * truck, player and line, then play the original introduction again (once). Controls stay live.
    */
   reset({ intro = true } = {}) {
+    if (this.paused) this.resume();
+    this.input?.reset();
+    this.audio.flushSfx();
     this.introToken = (this.introToken || 0) + 1; // invalidates callbacks of a previous intro
     this.dialogue.reset();
     this.fishing.reset();
     this.interactions.reset();
     this.truck.sim.reset();
+    this.bucketSpill.reset(); this.bucket.reset();
     this.truck.setMirrorAngle(0);
     this.animator.reset();
     this.animator.idlePose();
@@ -343,6 +362,7 @@ export class Game {
   #tick() {
     this.clock.update();
     const raw = this.clock.getDelta();
+    if (this.paused || document.hidden) return;
     const dt = Math.min(raw, 1 / 30);
     this.#adaptResolution(raw);
     this.#frame(dt);
@@ -385,6 +405,7 @@ export class Game {
     this.truck.sim.step(dt);
     this.truck.root.updateMatrixWorld(true);
     this.fishing.update(dt);
+    this.bucket.update(dt); this.bucketSpill.checkContact(); this.bucketSpill.update(dt);
     this.interactions.update(dt);
     this.dialogue.update();
 

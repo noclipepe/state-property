@@ -56,6 +56,8 @@ html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); 
   border-radius: 12px; background: var(--panel-strong); border: 1px solid var(--line); pointer-events: auto; }
 .menu button { border: 0; background: transparent; color: var(--ink); font: 600 13px system-ui, sans-serif; text-align: left; padding: 9px 12px; border-radius: 8px; cursor: pointer; }
 .menu button:hover { background: rgba(255,255,255,0.1); }
+.fisher-pause { position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: rgba(30,25,70,0.86); pointer-events: auto; }
+.fisher-pause .pill-btn { min-height: 48px; min-width: 210px; }
 .skip { position: absolute; right: 10px; top: calc(54px + var(--safe-t)); }
 
 /* target labels */

@@ -1,0 +1,40 @@
+// Capture the real Fish POV opening for its menu card and inspect the portrait view.
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const base = process.argv[2] || 'http://localhost:8085/';
+fs.mkdirSync('check-out/fish', { recursive: true });
+const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+const errors = [];
+page.on('pageerror', e => errors.push(e.message));
+page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+await page.goto(base + 'fish.html');
+await page.waitForFunction(() => window.__ready, null, { timeout: 90000 });
+await page.tap('#view');
+await page.waitForTimeout(800);
+await page.screenshot({ path: 'check-out/fish/opening.png' });
+console.log(await page.evaluate(() => ({ mode: __game.mode, camera: __game.camera.position.toArray(), height: __game.height, pitch: __game.pitch, wet: __game.wet, clip: __game.conv.clip?.id, calls: __game.renderer.info.render.calls, triangles: __game.renderer.info.render.triangles })));
+await page.keyboard.down('Space');
+await page.waitForTimeout(1600);
+await page.screenshot({ path: 'check-out/fish/surface.png' });
+await page.keyboard.up('Space');
+await page.click('#btn-splash');
+await page.waitForTimeout(500);
+await page.screenshot({ path: 'check-out/fish/jump.png' });
+await page.waitForTimeout(1100);
+await page.evaluate(() => __game.look(0, -0.9));
+await page.waitForTimeout(700);
+await page.screenshot({ path: 'check-out/fish/companions.png' });
+await page.evaluate(() => __game.pause());
+console.log('Errors:', errors);
+if (process.argv.includes('--card')) {
+  await page.goto(base + 'fish.html?shot&q=high');
+  await page.setViewportSize({ width: 720, height: 450 });
+  await page.waitForFunction(() => window.__ready, null, { timeout: 90000 });
+  await page.tap('#view');
+  await page.waitForTimeout(650);
+  await page.evaluate(() => { document.getElementById('hud').hidden = true; });
+  await page.screenshot({ path: 'assets/brand/card-fish.jpg', type: 'jpeg', quality: 88 });
+}
+await browser.close();
+if (errors.some(e => !e.includes('404'))) process.exitCode = 1;

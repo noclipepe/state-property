@@ -49,6 +49,13 @@ export class Input {
   }
 
   get reeling() { return this.enabled && (this.reelHeld.key || this.reelHeld.button); }
+  reset() {
+    this.keys.clear(); this.drag = null;
+    this.stick = { x: 0, y: 0, id: null }; this.move = { x: 0, y: 0 };
+    this.reelHeld = { key: false, button: false };
+    document.querySelector('.stick-knob').style.transform = '';
+    this.canvas.classList.remove('grabbing'); this.#reelChanged();
+  }
   #reelChanged() {
     document.getElementById('btn-reel').classList.toggle('active', this.reeling);
     this.game.onReelChanged?.(this.reeling);
@@ -97,29 +104,30 @@ export class Input {
   #cancel(e) { if (this.drag && e.pointerId === this.drag.id) { this.drag = null; this.canvas.classList.remove('grabbing'); } }
 
   #key(e, down) {
-    const k = e.key.toLowerCase();
+    // Bind physical keys so movement and shortcuts survive keyboard layout changes.
+    const k = e.code;
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-    if (down && e.repeat && k !== ' ') return;
-    if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(k)) e.preventDefault();
+    if (down && e.repeat && k !== 'Space') return;
+    if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(k)) e.preventDefault();
     if (down) this.keys.add(k); else this.keys.delete(k);
-    if (k === ' ') { this.reelHeld.key = down; this.#reelChanged(); }
+    if (k === 'Space') { this.reelHeld.key = down; this.#reelChanged(); }
     if (!down) return;
-    if (k === 'enter') this.game.onEnter?.();
-    if (!this.enabled && k !== 'escape') return;
-    if (k === 'x' || k === 'q') this.game.onRelease();
-    if (k === 'r') this.game.reset();
-    if (k === 'm') this.game.toggleMute();
-    if (k === 'escape') this.game.onEscape();
-    if (k === 't') this.game.startShowcase();
+    if (k === 'Enter') this.game.onEnter?.();
+    if (!this.enabled && k !== 'Escape') return;
+    if (k === 'KeyX' || k === 'KeyQ') this.game.onRelease();
+    if (k === 'KeyR') this.game.reset();
+    if (k === 'KeyM') this.game.toggleMute();
+    if (k === 'Escape') this.game.onEscape();
+    if (k === 'KeyT') this.game.startShowcase();
   }
 
   update() {
     let x = 0, y = 0;
     if (this.enabled) {
-      if (this.keys.has('w') || this.keys.has('arrowup')) y += 1;
-      if (this.keys.has('s') || this.keys.has('arrowdown')) y -= 1;
-      if (this.keys.has('a') || this.keys.has('arrowleft')) x -= 1;
-      if (this.keys.has('d') || this.keys.has('arrowright')) x += 1;
+      if (this.keys.has('KeyW') || this.keys.has('ArrowUp')) y += 1;
+      if (this.keys.has('KeyS') || this.keys.has('ArrowDown')) y -= 1;
+      if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) x -= 1;
+      if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) x += 1;
       x += this.stick.x; y += this.stick.y;
     }
     this.move.x = x; this.move.y = y;

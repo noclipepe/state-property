@@ -79,6 +79,12 @@ export class Player {
       if (pr < lim) { this.pos.x = pc.x + px / pr * lim * 1.3; this.pos.z = pc.z + pz / pr * lim; }
     }
     this.pos.z = Math.max(this.pos.z, -8.6);
+    // Walk around the upright pail instead of through its metal wall.
+    const bucket = this.game.bucket;
+    if (bucket && !bucket.spilled) {
+      const dx = this.pos.x-bucket.home.x, dz = this.pos.z-bucket.home.z, d = Math.hypot(dx,dz), r = 0.33+RADIUS;
+      if (d < r) { this.pos.x=bucket.home.x+(d>1e-4 ? dx/d : 1)*r; this.pos.z=bucket.home.z+(d>1e-4 ? dz/d : 0)*r; }
+    }
     // tree trunks near the play area
     for (const [tx, tz, th] of this.game.world.trees?.list || []) {
       const r = 0.28 * (th / 9) + RADIUS;

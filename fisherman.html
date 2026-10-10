@@ -53,10 +53,17 @@
       <div class="top-bar">
         <button id="btn-mute" class="icon-btn" aria-label="Mute" title="Mute (M)"><span class="ico-sound"></span></button>
         <div class="top-right">
+          <button id="btn-pause" class="pill-btn" title="Pause (Esc)">Pause</button>
           <button id="btn-reset" class="pill-btn" title="Restart (R)">Restart</button>
           <button id="btn-menu" class="pill-btn" aria-haspopup="true" title="Modes">Modes</button>
         </div>
       </div>
+      <section id="pause" class="fisher-pause hidden" aria-label="Paused">
+        <h2>Paused.</h2>
+        <button id="btn-resume" class="pill-btn">RESUME</button>
+        <button id="btn-pause-restart" class="pill-btn">RESTART</button>
+        <button id="btn-pause-games" class="pill-btn">BACK TO GAMES</button>
+      </section>
       <div id="menu" class="menu hidden">
         <button data-act="showcase">Truck Showcase</button>
         <button data-act="record">Record Mode</button>

@@ -7,7 +7,7 @@ export const SITE = {
   subtitle: 'Choose your POV',
   studio: 'noclipepe games',
   handle: '@noclipepe',
-  description: 'Relive the "state property" meme from both sides: hook the pickup as the fisherman, or talk your way through it as the driver. Free browser games by @noclipepe.',
+  description: 'Three perspectives on the State Property meme: the fisherman, the driver, and a fish already caught in a bucket. Free browser games by @noclipepe.',
 
   // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
   // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
@@ -23,18 +23,19 @@ export const SITE = {
   // The series menu (index.html), in this order. To add a game later, add an entry:
   //   id         unique, lowercase
   //   title      shown on the card
+  //   isNew      true shows a small NEW badge above the title
   //   tagline    a few words under the title
   //   image      card screenshot, 16:10 (assets/brand/card-<id>.jpg; tools/capture-previews.mjs makes them)
   //   available  false shows the card greyed out with "Not available yet" and no PLAY button
-  //   teaser     true (with available: false): an announcement card with a static
-  //              "COMING SOON" status instead of a launch button. When the game
+  //   teaser     true (with available: false): a "COMING SOON" announcement card with a
+  //              "Get notified" button to Instagram instead of the greyed-out look. When the game
   //              is ready, give it a real title, image and launch, and set available: true.
   //   launch     { page: 'x.html' } a game page in this project (the build publishes it), or
   //              { url: 'https://…' } a game hosted elsewhere
   games: [
     { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
     { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
-    { id: 'next', title: '??? POV', tagline: 'Someone else saw everything.', image: 'assets/brand/card-mystery.jpg', available: false, teaser: true },
+    { id: 'fish', title: 'FISH POV', isNew: true, tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.

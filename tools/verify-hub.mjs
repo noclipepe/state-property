@@ -2,9 +2,9 @@
 //   node tools/verify-hub.mjs [outDir] [baseUrl]     baseUrl default http://localhost:8080/
 //   (production: node tools/serve.mjs 8090 dist, then http://localhost:8090/)
 // The menu: cards from SITE.games with screenshots and PLAY, no 3D loaded, brand font, the
-// Follow for updates block (Instagram, X, >= 44 px), an unavailable game shown greyed out with no
+// NEW GAMES & UPDATES block (Instagram, X, >= 44 px), an unavailable game shown greyed out with no
 // PLAY. Launch Driver POV -> back to games (sound stopped) -> Fisherman POV -> back -> Driver again.
-// The "??? POV" teaser card: one static COMING SOON status after the tagline, no links or buttons.
+// Fish POV replaces the teaser with a real screenshot and a working PLAY button.
 // Layout: phones 360x800 / 390x844 / 430x932 portrait (cards stacked, everything on one screen),
 // 844x390 and 667x375 landscape and 1280x800 desktop (cards side by side).
 import { chromium } from 'playwright';
@@ -43,23 +43,24 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
       font: [...document.fonts].some((f) => f.family.includes('NewRodin') && f.status === 'loaded') && /NewRodin/.test(getComputedStyle(document.querySelector('.hub-title')).fontFamily),
       bg: getComputedStyle(document.querySelector('.hub')).backgroundImage,
       social: [...document.querySelectorAll('.social-btn')].map((a) => ({ k: a.dataset.link, href: a.href, w: a.offsetWidth, h: a.offsetHeight, label: a.textContent.trim() })),
-      socialTitle: document.querySelector('.social-title').textContent.trim(),
       events: (window.__events || []).length,
       sideBySide: cards.length > 1 && Math.abs(cards[0].getBoundingClientRect().top - cards[1].getBoundingClientRect().top) < 2,
     };
   });
-  check('menu: Fisherman POV and Driver POV cards with screenshots and PLAY, then the ??? POV teaser', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html,DRIVER POV>driver.html,??? POV>undefined' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
-  const teaser = await page.evaluate(() => { const c = document.querySelector('.card.teaser'); const s = c?.querySelector('.coming-soon'); return { status: s?.textContent, count: c?.querySelectorAll('.coming-soon').length, interactive: !!c?.querySelector('a, button, [role=button], [tabindex]'), last: s === c?.querySelector('.card-body').lastElementChild, oldBadge: !!c?.querySelector('.soon-badge'), h: s?.offsetHeight }; });
-  check('teaser: one static COMING SOON status in the button position, no interactive controls', teaser.status === 'COMING SOON' && teaser.count === 1 && !teaser.interactive && teaser.last && !teaser.oldBadge && teaser.h >= 48, JSON.stringify(teaser));
+  check('menu: three playable POV cards with screenshots', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html,DRIVER POV>driver.html,FISH POV>fish.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
+  check('Fish POV replaces the secret teaser', await page.locator('.card.teaser').count() === 0 && await page.locator('[data-game=fish] .card-tag').textContent() === "You're already caught.");
+  check('Only Fish POV has a small NEW badge above its title', await page.evaluate(() => {
+    const badge=document.querySelector('[data-game=fish] .new-badge'), title=document.querySelector('[data-game=fish] .card-title');
+    return document.querySelectorAll('.new-badge').length===1 && badge?.textContent==='NEW' && badge.getBoundingClientRect().bottom<=title.getBoundingClientRect().top;
+  }));
   check('menu loads no 3D (no three.js, meshes or canvas)', !hub.three && hub.canvas === 0);
   check('menu uses the brand font and the supplied background', hub.font && /assets\/brand\/background/.test(hub.bg));
-  check('Follow for updates: Instagram + X, labelled, >= 44 px', hub.socialTitle === 'Follow for updates' && hub.social.map((s) => s.k).join() === 'instagram,x' && hub.social[0].href === 'https://www.instagram.com/noclipepe/' && hub.social[1].href === 'https://x.com/noclipepe' && hub.social.every((s) => s.w >= 44 && s.h >= 44 && s.label), JSON.stringify(hub.social.map((s) => [s.label, s.w, s.h])));
+  check('NEW GAMES & UPDATES: Instagram + X, labelled, >= 44 px', hub.social.map((s) => s.k).join() === 'instagram,x' && hub.social[0].href === 'https://www.instagram.com/noclipepe/' && hub.social[1].href === 'https://x.com/noclipepe' && hub.social.every((s) => s.w >= 44 && s.h >= 44 && s.label), JSON.stringify(hub.social.map((s) => [s.label, s.w, s.h])));
   check('desktop: the cards sit side by side', hub.sideBySide);
   check('opening the menu tracks nothing', hub.events === 0);
   await page.click('.social-btn[data-link=instagram]');
   await page.click('.social-btn[data-link=x]');
-  await page.click('.card.teaser .coming-soon');
-  check('only Instagram + X clicks are tracked; the teaser status does nothing', (await page.evaluate(() => window.__events.map((e) => e.name).join())) === 'instagram_clicked,x_clicked' && page.url() === BASE);
+  check('Instagram + X clicks are tracked', (await page.evaluate(() => window.__events.map((e) => e.name).join())) === 'instagram_clicked,x_clicked');
   await page.screenshot({ path: `${out}/hub-desktop.png` });
 
   // ---- Driver POV, back, Fisherman POV, back, Driver POV again
@@ -79,6 +80,17 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.waitForTimeout(600);
   const fish = await page.evaluate(() => ({ mode: window.__game.mode, canvas: document.querySelectorAll('canvas').length, driver: !!window.__game.conv }));
   check('PLAY on Fisherman POV opens the original fisherman game (GO FISHING works)', fish.mode === 'play' && fish.canvas === 1 && !fish.driver, JSON.stringify(fish));
+  await page.click('#btn-pause');
+  await page.waitForTimeout(100);
+  const frozen = await page.evaluate(() => ({ audio:__game.audio.ctx.currentTime, line:__game.dialogue.current?.id, sim:__game.truck.sim.time }));
+  await page.waitForTimeout(400);
+  check('Fisherman pause freezes speech and simulation', await page.evaluate(f => __game.paused && __game.audio.ctx.state === 'suspended' && Math.abs(__game.audio.ctx.currentTime-f.audio)<0.04 && __game.dialogue.current?.id === f.line && __game.truck.sim.time === f.sim, frozen));
+  await page.click('#btn-resume');
+  await page.waitForTimeout(150);
+  check('Fisherman resumes the original line', await page.evaluate(f => !__game.paused && __game.audio.running && __game.dialogue.current?.id === f.line, frozen));
+  await page.click('#btn-reset');
+  await page.waitForTimeout(150);
+  check('Fisherman restart begins one fresh introduction', await page.evaluate(() => __game.dialogue.current?.id === 'g_who' && __game.dialogue.queue.length === 0));
   await page.click('#btn-menu');
   await page.evaluate(() => addEventListener('pagehide', () => sessionStorage.setItem('exitAudio2', window.__game.audio.ctx.state)));
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#menu [data-act=games]')]);
@@ -96,6 +108,15 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-other')]);
   await hubReady(page);
   check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 3);
+  await page.click('.card[data-game=fish] .btn-play');
+  await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
+  check('Fish POV needs no second PLAY after loading', await page.evaluate(() => __game.mode === 'play' && !document.querySelector('#btn-go')));
+  await page.waitForFunction(() => window.__game.conv.clip?.id === 'd_who');
+  check('Fish POV launches from the menu and plays the original audio', await page.evaluate(() => __game.audio.running && __game.mode === 'play'));
+  await page.click('#btn-pause');
+  await page.click('#btn-games');
+  await hubReady(page);
+  check('Fish POV returns to the three-mode menu', (await page.locator('.card .btn-play').count()) === 3);
   await ctx.close();
 }
 
@@ -115,7 +136,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
 }
 
 // =================================================================== layouts
-for (const [w, h, label] of [[360, 800, 'phone'], [390, 844, 'phone'], [430, 932, 'phone'], [844, 390, 'landscape'], [667, 375, 'landscape']]) {
+for (const [w, h, label] of [[320, 568, 'phone'], [360, 800, 'phone'], [390, 844, 'phone'], [430, 932, 'phone'], [844, 390, 'landscape'], [667, 375, 'landscape']]) {
   const { ctx, page } = await newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await page.goto(BASE);
   await hubReady(page);
@@ -126,14 +147,15 @@ for (const [w, h, label] of [[360, 800, 'phone'], [390, 844, 'phone'], [430, 932
     const social = [...document.querySelectorAll('.social-btn')].map(r);
     return {
       fits: document.scrollingElement.scrollHeight <= innerHeight + 1,
+      noHorizontalScroll: document.scrollingElement.scrollWidth <= innerWidth + 1,
       stacked: cards.every((c, i) => i === 0 || c.top >= cards[i - 1].bottom), side: cards.every((c) => Math.abs(c.top - cards[0].top) < 2),
       plays: plays.every((p) => p.height >= 48), social: social.every((s) => s.height >= 44 && s.width >= 44),
       bottom: Math.round(social[0].bottom), h: innerHeight,
     };
   });
   const arrangement = label === 'phone' ? L.stacked : L.side;
-  check(`${w}x${h}: ${label === 'phone' ? 'cards stacked' : 'cards side by side'}, everything on one screen, PLAY >= 48 px, links >= 44 px`,
-    arrangement && L.fits && L.plays && L.social, `social block ends at ${L.bottom}/${L.h}`);
+  check(`${w}x${h}: ${label === 'phone' ? 'cards stacked' : 'cards side by side'}, no horizontal overflow, PLAY >= 48 px, links >= 44 px`,
+    arrangement && L.noHorizontalScroll && L.plays && L.social, `social block ends at ${L.bottom}/${L.h}; vertical scrolling ${!L.fits}`);
   await page.screenshot({ path: `${out}/hub-${w}x${h}.png` });
   await ctx.close();
 }

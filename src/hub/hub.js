@@ -20,6 +20,7 @@ for (const g of SITE.games) {
 
   const body = document.createElement('div');
   body.className = 'card-body';
+  if (g.isNew) { const badge = document.createElement('span'); badge.className = 'new-badge'; badge.textContent = 'NEW'; body.append(badge); }
   const h = document.createElement('h2');
   h.className = 'card-title'; h.textContent = g.title;
   body.append(h);
@@ -31,10 +32,17 @@ for (const g of SITE.games) {
     a.addEventListener('click', () => { track('game_selected', { game: g.id }); a.classList.add('going'); });
     body.append(a);
   } else if (g.teaser) {
-    // An announcement: a static status in place of a launch button.
+    // an announcement: no PLAY, a reason to follow instead
     const s = document.createElement('p');
-    s.className = 'coming-soon'; s.textContent = 'COMING SOON';
-    body.append(s);
+    s.className = 'soon-badge'; s.textContent = 'COMING SOON';
+    body.prepend(s);
+    if (SITE.links.instagram) {
+      const a = document.createElement('a');
+      a.className = 'notify'; a.href = SITE.links.instagram; a.target = '_blank'; a.rel = 'noopener';
+      a.textContent = 'Get notified';
+      a.addEventListener('click', () => track('instagram_clicked', { from: 'teaser' }));
+      body.append(a);
+    }
   } else {
     const s = document.createElement('p');
     s.className = 'soon'; s.textContent = 'Not available yet';

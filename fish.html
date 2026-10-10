@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7972bd">
+<title>STATE PROPERTY · Fish POV</title>
+<meta name="description" content="You're already caught. Watch the State Property argument from inside a bucket of water.">
+<link rel="canonical" href="{{pageUrl}}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="STATE PROPERTY · Fish POV">
+<meta property="og:description" content="You're already caught. Same argument. Much smaller world.">
+<meta property="og:url" content="{{pageUrl}}">
+<meta property="og:image" content="{{ogImage}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@noclipepe">
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="preload" href="assets/brand/newrodin-db.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="src/ui/brand.css">
+<link rel="stylesheet" href="src/ui/driver.css">
+<link rel="stylesheet" href="src/ui/fish.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+<script>document.documentElement.classList.toggle('touch', matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);</script>
+</head>
+<body>
+<div id="app"><div id="stage">
+  <canvas id="view" aria-label="Fish view from inside the bucket. Drag to look around."></canvas>
+  <div id="hud" hidden>
+    <div class="hud-top">
+      <div class="byline"><img src="assets/brand/avatar-160.webp" width="22" height="22" alt="">by @noclipepe</div>
+      <div class="hud-btns">
+        <button id="btn-sound" class="fish-icon" aria-label="Mute sound" title="Sound (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-waves" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/><path class="sound-muted" d="m16 9 5 6m0-6-5 6"/></svg></button>
+        <button id="btn-restart" class="fish-icon" aria-label="Restart" title="Restart (R)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10a8 8 0 1 1 1 7M4 4v6h6"/></svg></button>
+        <button id="btn-pause" class="fish-icon" aria-label="Pause and menu" title="Pause (Esc)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" stroke-width="3"/></svg></button>
+      </div>
+    </div>
+    <div class="fish-label"><span>FISH POV</span><span id="depth-label">UNDERWATER</span></div>
+    <div id="fish-hint">WASD / left pad to swim · Drag to look</div>
+    <button id="btn-unmute" class="pill-sound" hidden>Tap for sound</button>
+    <div id="subtitle" class="subtitle" aria-live="polite"></div>
+    <div class="fish-controls">
+      <div id="swim-pad" class="swim-pad" role="group" aria-label="Swim horizontally: drag this pad, or use WASD"><span class="pad-knob"></span><span class="pad-label">SWIM</span></div>
+      <button id="btn-swim" class="swim-button" aria-label="Hold to swim to the surface"><span>↑ SURFACE</span><small>HOLD / SPACE</small></button>
+      <button id="btn-splash" class="splash-button" aria-label="Splash: jump out of the water">SPLASH<small>TAP / F</small></button>
+    </div>
+    <div id="showcase-bar" hidden><span>SHOWCASE</span><button id="btn-record" aria-label="Hide interface for recording">HIDE UI</button><button id="btn-live">TAKE CONTROL</button></div>
+  </div>
+  <section id="start" class="screen brand loading">
+    <div class="start-inner">
+      <header class="studio"><img src="assets/brand/avatar-160.webp" width="34" height="34" alt=""><span>STATE PROPERTY</span></header>
+      <h1 class="title">FISH POV</h1>
+      <p class="subtitle-line">You're already caught.</p>
+      <figure class="preview"><img src="assets/brand/card-fish.jpg" alt="Underwater, inside the bucket, looking up at the fisherman and the pickup" width="640" height="400"></figure>
+      <div class="load" aria-live="polite"><div class="load-bar"><div id="load-fill"></div></div><div id="load-text">Loading…</div></div>
+      <button id="btn-retry" class="btn-small" hidden>TRY AGAIN</button>
+      <p class="fish-instructions">WASD or the left pad to swim. Drag to look.<br>Hold Space / SURFACE to rise. Tap SPLASH to jump.</p>
+      <a class="back-link" href="./">‹ Back to games</a>
+    </div>
+  </section>
+  <section id="pause" class="screen fish-panel" hidden>
+    <div class="fish-panel-inner">
+      <p class="fish-eyebrow">STATE PROPERTY · FISH POV</p><h2 class="title">Just floating.</h2>
+      <button id="btn-resume" class="btn-play">RESUME</button>
+      <button id="btn-menu-restart" class="btn-small">RESTART</button>
+      <button id="btn-subs" class="btn-small" aria-pressed="true">SUBTITLES: ON</button>
+      <button id="btn-menu-showcase" class="btn-small">RESTART AS SHOWCASE</button>
+      <button id="btn-games" class="btn-link">BACK TO GAMES</button>
+      <div class="social-slot"></div>
+    </div>
+  </section>
+  <section id="end" class="screen fish-panel" hidden>
+    <div class="fish-panel-inner">
+      <p class="fish-eyebrow">FISH POV · THE END</p><h2 class="title">Out of the bucket.</h2>
+      <button id="btn-again" class="btn-play">PLAY AGAIN</button>
+      <button id="btn-other" class="btn-link">CHOOSE ANOTHER POV</button>
+      <div class="social-slot"></div>
+    </div>
+  </section>
+  <button id="btn-show-ui" hidden>SHOW UI</button>
+</div></div>
+<template id="fish-social"><div class="social"><p class="social-title">NEW GAMES &amp; UPDATES</p><div class="social-btns"><a class="social-btn" data-link="instagram" target="_blank" rel="noopener">Instagram</a><a class="social-btn" data-link="x" target="_blank" rel="noopener">X</a></div></div></template>
+<noscript><p class="noscript">Turn on JavaScript to play.</p></noscript>
+<script type="module" src="src/fish/main.js"></script>
+</body></html>

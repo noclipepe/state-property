@@ -20,6 +20,10 @@ export class UI {
     $('btn-mute').addEventListener('click', () => game.toggleMute());
     $('btn-reset').addEventListener('click', () => { this.closeMenu(); game.reset(); });
     $('btn-menu').addEventListener('click', (e) => { e.stopPropagation(); this.menu.classList.toggle('hidden'); });
+    $('btn-pause').addEventListener('click', () => game.pause());
+    $('btn-resume').addEventListener('click', () => game.resume());
+    $('btn-pause-restart').addEventListener('click', () => game.reset());
+    $('btn-pause-games').addEventListener('click', () => game.backToGames());
     $('btn-skip').addEventListener('click', () => game.skipIntro());
     this.releaseBtn.addEventListener('click', () => game.onRelease());
     $('btn-rec-exit').addEventListener('click', () => game.setRecordMode(false));
@@ -38,6 +42,7 @@ export class UI {
   }
 
   closeMenu() { this.menu.classList.add('hidden'); }
+  showPause(on) { this.closeMenu(); $('pause').classList.toggle('hidden', !on); }
   showLoading(on) { $('loading').classList.toggle('hidden', !on); }
   showStart(on) { $('start').classList.toggle('hidden', !on); }
   showHud(on) { $('hud').classList.toggle('hidden', !on); }

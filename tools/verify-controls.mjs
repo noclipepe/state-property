@@ -1,9 +1,10 @@
 // Verifies controls during dialogue and the truck-pulling behaviour in the real build.
-// Usage: node tools/verify-controls.mjs [outDir]   (server must be running on :8080)
+// Usage: node tools/verify-controls.mjs [outDir] [gameUrl]
 import { chromium } from 'playwright';
 import fs from 'node:fs';
 
 const out = process.argv[2] || 'check-out';
+const gameUrl = process.argv[3] || 'http://localhost:8080/fisherman.html';
 fs.mkdirSync(out, { recursive: true });
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--autoplay-policy=no-user-gesture-required'] });
 const page = await browser.newPage({ viewport: { width: 432, height: 768 } });
@@ -24,7 +25,7 @@ const snap = () => ev(() => {
     script: g.animator.script?.name ?? null,
   };
 });
-const boot = async (q) => { await page.goto('http://localhost:8080/fisherman.html' + q); await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 }); await wait(500); };
+const boot = async (q) => { await page.goto(gameUrl + q); await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 }); await wait(500); };
 
 // ------------------------------------------------------------ A. controls during the intro
 await boot('');
@@ -58,7 +59,7 @@ const p1 = await snap();
 check('no camera/position reset across lines', Math.abs(p1.px - p0.px) < 0.01 && Math.abs(p1.yaw - p0.yaw) < 0.05, `${p0.speaking} -> ${p1.speaking}`);
 
 // ------------------------------------------------------------ B. truck pull from beside the cab
-async function pull(pose, ms, shots = '', backUpAfter = 0) {
+async function pull(pose, ms, backUpAfter = 0) {
   await ev(() => window.__game.reset());
   await wait(200);
   await ev((p) => { const g = window.__game; g.player.setPose(p); g.fishing.cast(g.interactions.byId.truck); }, pose);
@@ -66,19 +67,17 @@ async function pull(pose, ms, shots = '', backUpAfter = 0) {
   const samples = [];
   const t0 = Date.now();
   await page.keyboard.down(' ');
-  let i = 0;
+  // Keep screenshots out of this timed measurement: readback can take longer than the pull.
   while (Date.now() - t0 < ms) {
     await wait(200);
     const s = await snap(); s.t = (Date.now() - t0) / 1000; samples.push(s);
-    if (shots && i % 3 === 2) await page.screenshot({ path: `${out}/${shots}_${i}.png` });
     if (backUpAfter && s.t > backUpAfter && !samples.backing) { samples.backing = true; await page.keyboard.down('s'); }
-    i++;
   }
   await page.keyboard.up(' ');
   await page.keyboard.up('s');
   return samples;
 }
-const side = await pull({ x: -0.9, z: 2.6, yaw: 0.25, pitch: -0.22 }, 4200, 'v_side', 1.6);
+const side = await pull({ x: -0.9, z: 2.6, yaw: 0.25, pitch: -0.22 }, 4200, 1.6);
 const brk = side.find((s) => !s.stuck);
 check('resistance phase, then breakaway within ~1.5 s', brk && brk.t > 0.3 && brk.t < 1.6, brk ? `broke loose at ${brk.t.toFixed(2)} s` : 'never moved');
 const end = side[side.length - 1];
@@ -100,8 +99,8 @@ const pitches = rel.map((s) => s.pitch.toFixed(3)).join(' ');
 check('release wobble damps out', Math.abs(rel[rel.length - 1].pitch) < 0.02, pitches);
 
 // ------------------------------------------------------------ D. direction depends on where you stand
-const front = await pull({ x: -4.3, z: 1.2, yaw: -1.2, pitch: -0.15 }, 2600, '');
-const rear = await pull({ x: 1.8, z: 3.2, yaw: 0.6, pitch: -0.2 }, 2600, '');
+const front = await pull({ x: -4.3, z: 1.2, yaw: -1.2, pitch: -0.15 }, 2600);
+const rear = await pull({ x: 1.8, z: 3.2, yaw: 0.6, pitch: -0.2 }, 2600);
 const fEnd = front[front.length - 1], rEnd = rear[rear.length - 1];
 console.log('   front pull ->', fEnd.tx.toFixed(2), fEnd.tz.toFixed(2), 'yaw', fEnd.tyaw.toFixed(2));
 console.log('   rear-side pull ->', rEnd.tx.toFixed(2), rEnd.tz.toFixed(2), 'yaw', rEnd.tyaw.toFixed(2));
@@ -111,7 +110,7 @@ check('standing back/right drags it differently', rEnd.tx > fEnd.tx + 1.0 && Mat
 // ------------------------------------------------------------ E. repeated pulls + reset
 let repeatOk = true;
 for (let k = 0; k < 4; k++) {
-  const s = await pull({ x: -0.9 - k * 0.5, z: 2.6 + k * 0.3, yaw: 0.25, pitch: -0.22 }, 1800, '');
+  const s = await pull({ x: -0.9 - k * 0.5, z: 2.6 + k * 0.3, yaw: 0.25, pitch: -0.22 }, 1800);
   await page.keyboard.press('x'); await wait(600);
   const e = await snap();
   if (!e.seatOk || !Number.isFinite(e.tx) || e.fishing === 'hooked' || Math.abs(e.tx) > 8 || Math.abs(e.tz) > 7) repeatOk = false;
@@ -123,3 +122,4 @@ check('reset restores truck, hook and pose', Math.hypot(r.tx, r.tz) < 1e-3 && r.
 
 console.log(`\n${results.filter((x) => x.ok).length}/${results.length} checks passed; page errors: ${errors.length ? errors.join(' | ') : 'none'}`);
 await browser.close();
+process.exitCode = results.every((r) => r.ok) && errors.length === 0 ? 0 : 1;

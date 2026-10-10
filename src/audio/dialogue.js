@@ -1,4 +1,4 @@
-// Dialogue manager: verified clips from the meme's original audio, one at a time,
+// Dialogue manager: verified clips from the reference recording, one at a time,
 // with cooldowns, no immediate repeats, subtitles and a mouth envelope for lip motion.
 
 export class Dialogue {
@@ -30,7 +30,7 @@ export class Dialogue {
     }));
   }
 
-  now() { return performance.now() / 1000; }
+  now() { return this.audio.ctx.currentTime; }
   get speaking() { return !!this.current; }
   get grandpaSpeaking() { return !!this.current && this.lines[this.current.id].speaker === 'grandpa'; }
 
@@ -83,21 +83,21 @@ export class Dialogue {
 
   // after a line: run queued reactions first, then continue (sequence or nothing)
   #after(cont, gap) {
-    this._gapTimer = setTimeout(() => {
+    this._gapTimer = { at: this.now() + gap, run: () => {
       this._gapTimer = null;
       const q = this.queue.shift();
       if (q) {
         this.#play(q.id, { onEnd: () => this.#after(cont || (() => {}), 0.3) });
         q.onStart?.();
       } else cont?.();
-    }, gap * 1000);
+    } };
   }
 
   #play(id, opts = {}) {
     if (this.current) this.#stopCurrent();
     const line = this.lines[id];
     const src = this.audio.playBuffer(this.buffers[id], this.audio.voice, 1.0);
-    const start = this.now() + 0.01;
+    const start = src.startTime;
     this.current = { id, src, start, line };
     this.lastPlayed[id] = start;
     this.lastId = id;
@@ -128,7 +128,6 @@ export class Dialogue {
   // stop speech, cancel any sequence, queued reactions and pending gaps
   stop() {
     if (this._seq) { this._seq.cancelled = true; this._seq = null; }
-    clearTimeout(this._gapTimer);
     this._gapTimer = null;
     this.queue.length = 0;
     this.#stopCurrent();
@@ -139,7 +138,6 @@ export class Dialogue {
   // cut the running sequence (and its current line) short, but keep queued reactions
   skipSequence() {
     if (this._seq) { this._seq.cancelled = true; this._seq = null; }
-    clearTimeout(this._gapTimer);
     this._gapTimer = null;
     this.#stopCurrent();
     this.#setSubtitle(null);
@@ -166,6 +164,7 @@ export class Dialogue {
   }
 
   update() {
+    if (this._gapTimer && this.now() >= this._gapTimer.at) this._gapTimer.run();
     if (!this.current) return;
     const t = this.now() - this.current.start;
     const cue = this.current.line.cues.find((c) => t >= c.t0 - 0.05 && t < c.t1 + 0.1);

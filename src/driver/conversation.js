@@ -82,6 +82,10 @@ export class Conversation {
     this.state = 'choose';
     this.step = k;
     this.ui.setSubtitle(null);
+    if (this.automatic) {
+      this.choose(k, MENUS[k].options.findIndex((o) => o.clip));
+      return;
+    }
     this.ui.showChoices(MENUS[k].options.map((o) => o.label), (i) => this.choose(k, i));
     this.onEvent?.('menu', k);
   }

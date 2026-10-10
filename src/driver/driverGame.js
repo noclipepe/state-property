@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { createWorld } from '../scene/world.js';
 import { loadTruck } from '../scene/truck.js';
 import { Effects } from '../scene/effects.js';
+import { addFishingBucket } from '../scene/fishing-bucket.js';
 import { patchMaterial } from '../scene/shading.js';
 import { loadGrandpa, loadFisherman } from '../character/grandpa.js';
 import { GrandpaAnimator } from '../character/animator.js';
@@ -17,6 +18,7 @@ import { DriverView, DashProp } from './cabin.js';
 import { DriverUI } from './ui.js';
 import { DriverInput } from './input.js';
 import { track } from '../analytics.js';
+import { HOME, FISHER_LOCAL as FISHER_COORDS, POND } from './layout.js';
 
 const BASE = new URL('../../', import.meta.url).href;
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -24,9 +26,7 @@ const UP = V(0, 1, 0);
 
 // Layout: the pickup is parked with its driver's side toward the pond; the fisherman stands
 // outside the driver's window, a little ahead of it, between the truck and the water.
-const HOME = { x: -2.93, z: 7.35, yaw: 2.428 };
-const FISHER_LOCAL = V(-0.85, 0, 1.85); // truck-body coords at rest
-const POND = { x: 11, z: 6.5, rx: 4.6 * 1.3, rz: 4.6, stop: 1.36 };
+const FISHER_LOCAL = V(...FISHER_COORDS);
 const OPENING = { seconds: 1.1, distance: 0.9, yaw0: 0.36 }; // final braking; the head turns from the wheel to him
 const VIEW_OFFSET = -0.14; // keep him left of centre (clear of the right-hand overlays); A-pillar and mirror show
 const VIEW_PITCH = -0.1;
@@ -73,6 +73,7 @@ export class DriverGame {
     sim.bounds = { x0: -9, x1: 2.4, z0: 2.5, z1: 12 };
     sim.avoid = [{ x: -6.5, z: 4.5, r: 3.0 }, { x: 3, z: 11, r: 2.4 }];
     sim.reset();
+    addFishingBucket(this);
 
     // you: grandpa's body in the driver's seat, head hidden (the camera is your eyes)
     this.driver = grandpa;
@@ -245,6 +246,7 @@ export class DriverGame {
     this.hook.reset();
     this.audio.flushSfx?.();
     this.truck.sim.reset();
+    this.bucketSpill.reset(); this.bucket.reset();
     this.truck.setMirrorAngle(0);
     this.fisher.reset();
     this.driverAnim.reset();
@@ -449,6 +451,8 @@ export class DriverGame {
     this.hook.update(dt);
     sim.step(dt);
     this.truck.root.updateMatrixWorld(true);
+
+    this.bucket.update(dt); this.bucketSpill.checkContact(); this.bucketSpill.update(dt);
 
     // your body: braced by the truck's motion
     const acc = new THREE.Vector2(sim.vel.x - this.prevVel.x, sim.vel.y - this.prevVel.y).divideScalar(Math.max(dt, 1e-3));

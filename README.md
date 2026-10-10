@@ -2,9 +2,9 @@
 
 [![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
 
-Two playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
+Three playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
-![The series menu, Fisherman POV and Driver POV](docs/screenshot.jpg)
+![The series menu: Fisherman POV, Driver POV and Fish POV](docs/screenshot.jpg)
 
 ## The games
 
@@ -15,7 +15,13 @@ Two playable perspectives on the State Property meme, in the browser. Built for 
   answers replay the original conversation with the original voices; then he hooks your truck
   and hauls it toward the pond, with you still inside.
 
-Both start from one menu (`index.html`, "Choose your POV").
+- **Fish POV**: you are a caught fish inside a metal bucket. Listen to the full original
+  argument, swim around, surface to hear clearly, and splash. The pickup eventually knocks
+  the bucket over, spilling the water and fish onto the bank for a brief ending.
+
+All three start from one menu (`index.html`, "Choose your POV"). Fish POV has a **NEW** badge;
+**CHOOSE SKIN — COMING SOON** announces a future feature. The same filled bucket appears
+beside the pickup in the two human perspectives, with larger fish in Fisherman POV.
 
 ## Controls
 
@@ -31,6 +37,8 @@ Both start from one menu (`index.html`, "Choose your POV").
 | Restart / mute | **R** / **M** | buttons at the top |
 | Truck Showcase, Record Mode | **T**, or Modes | Modes |
 
+Movement and shortcuts use physical keys, including when a Russian or other keyboard layout is active.
+
 **Driver POV**
 
 | | Desktop | Mobile |
@@ -41,6 +49,14 @@ Both start from one menu (`index.html`, "Choose your POV").
 | Pause / menu | **Esc** / **P** | pause button |
 | Restart / mute | **R** / **M** | buttons at the top |
 | Hide the top bar for recording | **H**, or add `?clean` to the address | `?clean` |
+
+**Fish POV controls:** drag or swipe to look; use **WASD** or the left pad to swim. Hold
+**Space / SURFACE** to rise and release to sink; press **F / SPLASH** to jump. **Esc**, **R**
+and **M** pause, restart and mute. Loading opens the game immediately. If autoplay is blocked,
+the first tap unlocks audio and starts the waiting dialogue. Speech becomes muffled underwater
+and clear above the surface without restarting the clip. Subtitles and a repeatable recording
+showcase are available from the pause menu; `fish.html?showcase&clean` starts a showcase with
+its interface hidden. Fish POV uses the original recordings in order, with no invented speech.
 
 ## Run it locally
 
@@ -57,7 +73,7 @@ work.
 ## Build
 
 ```bash
-npm run build   # -> dist/ (the menu and both game pages, ready to host as static files)
+npm run build   # -> dist/ (the menu and all three game pages, ready to host as static files)
 ```
 
 The build copies only what the pages use, packs the meshes, fills in share metadata and creator
