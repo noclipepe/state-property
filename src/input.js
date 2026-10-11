@@ -67,6 +67,7 @@ export class Input {
   }
   #down(e) {
     if (!this.enabled) return;
+    this.game.gru?.stopShowcase();
     if (this.drag) return; // one look pointer at a time
     capture(this.canvas, e.pointerId);
     const p = this.#local(e);
@@ -114,6 +115,11 @@ export class Input {
     if (!down) return;
     if (k === 'Enter') this.game.onEnter?.();
     if (!this.enabled && k !== 'Escape') return;
+    if (this.game.gru) {
+      if (['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyE','KeyF','Space'].includes(k)) this.game.gru.stopShowcase();
+      if (k === 'KeyE') this.game.gru.take();
+      if ((k === 'KeyF' || k === 'Space') && !e.repeat) this.game.gru.fire();
+    }
     if (k === 'KeyX' || k === 'KeyQ') this.game.onRelease();
     if (k === 'KeyR') this.game.reset();
     if (k === 'KeyM') this.game.toggleMute();
@@ -129,6 +135,7 @@ export class Input {
       if (this.keys.has('KeyA') || this.keys.has('ArrowLeft')) x -= 1;
       if (this.keys.has('KeyD') || this.keys.has('ArrowRight')) x += 1;
       x += this.stick.x; y += this.stick.y;
+      if ((x || y) && this.game.gru) this.game.gru.stopShowcase();
     }
     this.move.x = x; this.move.y = y;
   }

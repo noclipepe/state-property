@@ -16,6 +16,10 @@ import { Fishing } from './gameplay/fishing.js';
 import { Interactions, LINES } from './gameplay/interactions.js';
 import { Input } from './input.js';
 import { UI } from './ui/ui.js';
+import { getFishermanSkin } from './skins.js';
+import { loadGru } from './character/gru.js';
+import { createGruVehicle, visibleVehicleBounds } from './scene/gru-vehicle.js';
+import { GruScene } from './gameplay/gru-scene.js';
 
 const BASE = new URL('../', import.meta.url).href;
 
@@ -35,6 +39,7 @@ export class Game {
     this.hot = null;
     this.idleTalkT = 25;
     this.debug = new URLSearchParams(location.search);
+    this.skin = getFishermanSkin();
   }
 
   async load(progress) {
@@ -46,12 +51,13 @@ export class Game {
     report('world', 1);
     const [truck, grandpa, props] = await Promise.all([
       loadTruck((p) => report('truck', p, 'Loading the pickup…')),
-      loadGrandpa((p) => report('grandpa', p, 'Loading grandpa…')),
+      (this.skin === 'gru' ? loadGru : loadGrandpa)((p) => report('grandpa', p, this.skin === 'gru' ? 'Loading Gru…' : 'Loading grandpa…')),
       loadPack(BASE + 'assets/meshes/props', (p) => report('props', p)),
-      this.dialogue.load(BASE, (p) => report('audio', p, 'Loading dialogue…')),
+      this.dialogue.load(BASE, (p) => report('audio', p, 'Loading dialogue…'), this.skin === 'gru' ? 'gru_dialogue.json' : 'dialogue.json'),
     ]);
     report('props', 1); report('audio', 1);
     this.truck = truck; this.grandpa = grandpa;
+    if (this.skin === 'gru') createGruVehicle(truck);
     this.props = props.geos;
     this.scene.add(truck.root);
     // seat the driver
@@ -79,10 +85,15 @@ export class Game {
     this.line = new FishingLine(this.scene, new THREE.Vector2(1, 1));
     this.#setupLineColliders();
     this.fishing = new Fishing(this);
-    this.interactions = new Interactions(this);
+    this.interactions = this.skin === 'gru' ? { targets:[], byId:{}, reset(){}, update(){} } : new Interactions(this);
+    if (this.skin === 'gru') {
+      const bounds = visibleVehicleBounds(truck), size = bounds.getSize(new THREE.Vector3());
+      this.vehicleMeasurements = { length:size.x, width:size.z, height:size.y, min:bounds.min.toArray(), max:bounds.max.toArray() };
+    }
     this.fishing.onState = (s, t) => this.#onFishingState(s, t);
     this.effects = new Effects(this.scene, this.world.trample);
     this.input = new Input(this, this.canvas, this.stage);
+    if (this.skin === 'gru') this.gru = new GruScene(this);
     this.dialogue.onLineStart = (id) => { this.idleTalkT = 25; };
     this.pickRay = new THREE.Raycaster();
     // subtle ring that marks the target under the cursor
@@ -111,12 +122,13 @@ export class Game {
     let frame = -1;
     const headC = new THREE.Vector3();
     this.line.colliders.push((p) => {
-      if (frame !== this.frameNo) { frame = this.frameNo; body.begin(); this.grandpa.bones.head.getWorldPosition(headC); headC.y += 0.08; }
+      if (frame !== this.frameNo) { frame = this.frameNo; body.begin(); this.grandpa.bones.head.getWorldPosition(headC); headC.y += 0.08 * this.truck.root.scale.x; }
       if (p.y < 0.01) p.y = 0.01;
       body.apply(p);
       // keep the line off grandpa's face
       const d = p.distanceTo(headC);
-      if (d < 0.13) p.sub(headC).multiplyScalar(0.13 / Math.max(d, 1e-4)).add(headC);
+      const radius = 0.13 * this.truck.root.scale.x;
+      if (d < radius) p.sub(headC).multiplyScalar(radius / Math.max(d, 1e-4)).add(headC);
     });
   }
 
@@ -132,6 +144,7 @@ export class Game {
 
   start() {
     document.querySelector('.start-sub').textContent = this.isTouch ? 'Sound on · Drag to look · Tap a target to cast' : 'Sound on · Drag to look · Click a target to cast';
+    if (this.gru) document.querySelector('.start-sub').textContent = 'Sound on · Drag to look · Fisherman POV / GRU';
     this.ui.showLoading(false);
     this.ui.showStart(true);
     this.mode = 'title';
@@ -145,6 +158,10 @@ export class Game {
     requestAnimationFrame(loop);
     // autostart / camera override for automated checks
     if (this.debug.has('autostart')) this.go(this.debug.get('autostart') === 'skip');
+    if (this.gru && this.debug.has('showcase')) {
+      if (this.debug.has('clean')) { this.recordMode = true; this.ui.setRecord(true); }
+      this.startShowcase();
+    }
     if (this.debug.has('cam')) {
       const [x, z, yaw, pitch, y] = this.debug.get('cam').split(',').map(Number);
       this.player.setPose({ x, z, yaw, pitch });
@@ -263,6 +280,7 @@ export class Game {
     this.animator.reset();
     this.animator.idlePose();
     this.effects.reset();
+    this.gru?.reset();
     this.player.setPose(START_POSE);
     this.line.inited = false;
     this.showcase = false;
@@ -272,6 +290,10 @@ export class Game {
   }
 
   startShowcase() {
+    if (this.gru) {
+      if (this.mode === 'title') { this.ui.showStart(false); this.ui.showHud(true); this.audio.unlock(); this.#beginPlay(); }
+      this.reset(); this.showcase = true; this.gru.startShowcase(); return;
+    }
     if (this.mode === 'title') { this.ui.showStart(false); this.ui.showHud(true); this.audio.resume(); }
     this.reset({ intro: false });
     if (this.mode !== 'play') this.#beginPlay();
@@ -282,7 +304,8 @@ export class Game {
   }
 
   onTap(x, y) {
-    if (this.mode !== 'play') return;
+    if (this.mode !== 'play' || this.paused) return;
+    if (this.gru) { this.gru.tap(x,y); return; }
     const t = this.#pick(x, y, true);
     if (t) this.fishing.cast(t);
     else this.ui.setHint(this.isTouch ? 'Tap a highlighted target to cast' : 'Click a highlighted target to cast');
@@ -415,6 +438,7 @@ export class Game {
     acc.applyAxisAngle(new THREE.Vector3(0, 1, 0), -this.truck.sim.yaw);
     if (!this.animator.lookOverride) this.animator.lookTarget.copy(this.camera.getWorldPosition(new THREE.Vector3()));
     this.animator.update(dt, { truckAccel: acc, speechEnv: this.dialogue.envelope(), speaking: this.dialogue.speaking });
+    this.gru?.update(dt);
 
     // idle remark if the player just stands around
     if (this.mode === 'play' && !this.fishing.hooked && !this.dialogue.speaking && !this.animator.busy) {
@@ -473,6 +497,7 @@ export class Game {
   }
 
   #updateHint() {
+    if (this.gru) return;
     const touch = this.isTouch;
     const f = this.fishing;
     let h = '';

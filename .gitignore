@@ -3,3 +3,7 @@ check-out/
 dist/
 release/
 *.log
+assets/audio/TRANSCRIPT.md
+*.mp4
+*.mov
+*.wav

@@ -1,5 +1,6 @@
 // Renders the stills used by the public site from the actual games:
 //   assets/brand/card-fisherman.jpg (720x450) series-menu card: the fisherman POV start view
+//   assets/brand/card-fisherman-gru.jpg (720x450) Gru at his vehicle's window
 //   assets/brand/card-driver.jpg    (720x450) series-menu card + driver loading screen: in the cab
 //   assets/brand/card-fish.jpg      (720x450) the actual underwater Fish POV opening
 //   assets/brand/preview.jpg   (1200x750) outside view: the white pickup, grandpa at the window and
@@ -12,6 +13,29 @@ import { fileURLToPath } from 'node:url';
 const OUT = fileURLToPath(new URL('../assets/brand/', import.meta.url));
 const SHOT = '-3.3,1.9,4.7,-0.35,1.25,0.9'; // camera + target in truck coordinates (see DriverGame.#shotCam)
 const browser = await chromium.launch({ args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
+
+async function fishermanCards() {
+  const context = await browser.newContext({ viewport: { width: 720, height: 1280 }, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  for (const skin of ['original', 'gru']) {
+    await page.goto(`http://localhost:8080/fisherman.html?skin=${skin}&autostart=skip&q=high`);
+    await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
+    await page.evaluate(() => {
+      document.getElementById('hud').style.display = 'none';
+      if (__game.skin === 'gru') __game.player.setPose({ x: -0.95, z: 2.65, yaw: -0.37, pitch: -0.24 });
+    });
+    await page.waitForTimeout(1500);
+    const name = skin === 'gru' ? 'card-fisherman-gru.jpg' : 'card-fisherman.jpg';
+    await page.screenshot({ path: OUT + name, type: 'jpeg', quality: 82, clip: { x: 0, y: skin === 'gru' ? 300 : 250, width: 720, height: 450 } });
+  }
+  await context.close();
+}
+await fishermanCards();
+if (process.argv.includes('--fisherman-skins')) {
+  await browser.close();
+  console.log('Wrote both static Fisherman skin previews.');
+  process.exit(0);
+}
 
 const game = await browser.newPage({ viewport: { width: 1200, height: 750 } });
 await game.goto(`http://localhost:8080/driver.html?shot=${SHOT}&q=high`);
@@ -27,12 +51,6 @@ await card.screenshot({ path: OUT + 'og-image.jpg', type: 'jpeg', quality: 86 })
 
 // series-menu cards: each game as you see it, interface hidden
 const phone = (w, h) => browser.newContext({ viewport: { width: w, height: h }, isMobile: true, hasTouch: true }).then((c) => c.newPage());
-const fish = await phone(720, 1280);
-await fish.goto('http://localhost:8080/fisherman.html?autostart=skip&q=high');
-await fish.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
-await fish.evaluate(() => { document.getElementById('hud').style.display = 'none'; });
-await fish.waitForTimeout(1500);
-await fish.screenshot({ path: OUT + 'card-fisherman.jpg', type: 'jpeg', quality: 82, clip: { x: 0, y: 250, width: 720, height: 450 } });
 const drive = await phone(720, 450);
 await drive.goto('http://localhost:8080/driver.html?q=high');
 await drive.waitForFunction(() => window.__game?.state === 'choose', null, { timeout: 90000 });

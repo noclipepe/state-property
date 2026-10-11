@@ -57,16 +57,17 @@ export class Player {
     const c = Math.cos(root.rotation.y), s = Math.sin(root.rotation.y);
     const dx = this.pos.x - root.position.x, dz = this.pos.z - root.position.z;
     let lx = dx * c - dz * s, lz = dx * s + dz * c;
-    const hx = 2.86 + RADIUS, hz = 1.0 + RADIUS;
+    const scale = root.scale.x;
+    const hx = (t.collisionHalf?.x ?? 2.86) * scale + RADIUS, hz = (t.collisionHalf?.z ?? 1.0) * scale + RADIUS;
     if (Math.abs(lx) < hx && Math.abs(lz) < hz) {
       const px = hx - Math.abs(lx), pz = hz - Math.abs(lz);
-      if (px < pz) lx = Math.sign(lx) * hx; else lz = Math.sign(lz) * hz;
+      if (px < pz) lx = (Math.sign(lx) || 1) * hx; else lz = (Math.sign(lz) || 1) * hz;
     }
     // mirror head sticks out on the driver side
     const ma = t.mirrorAngle || 0;
     const mx = -0.80 - Math.sin(ma) * 0.25, mz = 1.0 + Math.cos(ma) * 0.25;
     const ddx = lx - mx, ddz = lz - mz, dd = Math.hypot(ddx, ddz), mr = 0.16 + RADIUS;
-    if (dd < mr && dd > 1e-4) { lx = mx + ddx / dd * mr; lz = mz + ddz / dd * mr; }
+    if (!t.gru && dd < mr && dd > 1e-4) { lx = mx + ddx / dd * mr; lz = mz + ddz / dd * mr; }
     this.pos.x = root.position.x + lx * c + lz * s;
     this.pos.z = root.position.z - lx * s + lz * c;
     // play area: stay near the truck, out of the pond, off the road
@@ -82,7 +83,7 @@ export class Player {
     // Walk around the upright pail instead of through its metal wall.
     const bucket = this.game.bucket;
     if (bucket && !bucket.spilled) {
-      const dx = this.pos.x-bucket.home.x, dz = this.pos.z-bucket.home.z, d = Math.hypot(dx,dz), r = 0.33+RADIUS;
+      const dx = this.pos.x-bucket.home.x, dz = this.pos.z-bucket.home.z, d = Math.hypot(dx,dz), r = 0.33*bucket.root.scale.x+RADIUS;
       if (d < r) { this.pos.x=bucket.home.x+(d>1e-4 ? dx/d : 1)*r; this.pos.z=bucket.home.z+(d>1e-4 ? dz/d : 0)*r; }
     }
     // tree trunks near the play area

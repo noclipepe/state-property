@@ -233,7 +233,7 @@ export class Grandpa {
       B['eye' + s].quaternion.copy(Q['eye' + s]).multiply(q.setFromEuler(e));
       // lids: upper follows pitch, blink closes, squint narrows
       const blink = f.blink;
-      const upOpen = this._eyePitch * 0.55 + 0.16 * f.browUp - 0.15 * f.squint - 0.07 * f.browAngry;
+      const upOpen = (this.opts.eyeOpen || 0) + this._eyePitch * 0.55 + 0.16 * f.browUp - 0.15 * f.squint - 0.07 * f.browAngry;
       const upA = THREE.MathUtils.lerp(-upOpen, 0.95, blink);
       e.set(upA, this._eyeYaw * 0.25, 0, 'YXZ');
       B['lidUp' + s].quaternion.copy(Q['lidUp' + s]).multiply(q.setFromEuler(e));

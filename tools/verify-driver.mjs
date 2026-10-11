@@ -111,14 +111,16 @@ const menuReady = (page, k) => waitFor(page, (k) => window.__game.state === 'cho
   check('brand font file loads and is used', brand.font && brand.fontReq && /NewRodin/.test(brand.family), brand.family.slice(0, 40));
   check('loading screen uses the supplied background', /assets\/brand\/background/.test(brand.bg));
   check('creator links (Instagram, X) come from the config', brand.links.instagram === 'https://www.instagram.com/noclipepe/' && brand.links.x === 'https://x.com/noclipepe');
-  await page.screenshot({ path: `${out}/desktop-start.png` });
   await instrument(page);
 
   // ---------------------------------------------------- 1. the game starts by itself once loaded
+  // Capture the arrival from a fresh replay, before screenshot readback can consume it.
+  await page.evaluate(() => window.__game.reset());
   let a = await st(page);
   await page.waitForTimeout(250);
   let b = await st(page);
   check('loaded: the game starts, the truck brakes into place', a.mode === 'play' && Math.hypot(b.x - a.x, b.z - a.z) > 0.05 && a.events.includes('play_started') && !(await page.locator('#start').isVisible()));
+  await page.screenshot({ path: `${out}/desktop-start.png` });
   await dragMouse(page, -60, 0);
   let s = await st(page);
   check('look works during the opening', Math.abs(s.userYaw) > 0.1);

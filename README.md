@@ -4,7 +4,7 @@
 
 Three playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
-![The series menu: Fisherman POV, Driver POV and Fish POV](docs/screenshot.jpg)
+![The series menu: Fisherman POV with skin selection, Driver POV and Fish POV](docs/screenshot.png)
 
 ## The games
 
@@ -19,9 +19,36 @@ Three playable perspectives on the State Property meme, in the browser. Built fo
   argument, swim around, surface to hear clearly, and splash. The pickup eventually knocks
   the bucket over, spilling the water and fish onto the bank for a brief ending.
 
-All three start from one menu (`index.html`, "Choose your POV"). Fish POV has a **NEW** badge;
-**CHOOSE SKIN — COMING SOON** announces a future feature. The same filled bucket appears
-beside the pickup in the two human perspectives, with larger fish in Fisherman POV.
+All three start from one menu (`index.html`, "Choose your POV"). The Fisherman card has a
+**SKIN: ORIGINAL / GRU** selector with a **NEW** badge. Original is the default; an explicit
+selection is remembered in this browser. The selector updates a static gameplay preview
+without loading a 3D scene or leaving the menu. Press PLAY to launch the selected version.
+Escape, clicking outside or tabbing away dismisses the panel. Arrow keys move between options;
+Enter or Space selects one. Driver POV and Fish POV keep their original characters.
+
+The same filled bucket appears beside the pickup in the two human perspectives, with larger
+fish in Fisherman POV.
+
+### Gru skin
+
+Gru sits in a riveted metal vehicle with an open cockpit, striped scarf and a mounted shrink
+ray beside the driver's window. Take the ray, aim, and fire at the vehicle or the fish bucket.
+The fishing rod is stowed before the ray enters the player's hand. Misses do nothing.
+
+A hit shrinks the vehicle and its occupant together over 0.8 seconds, including collision
+bounds, while keeping the wheels grounded. The separate bucket target shrinks with its water
+and swimming fish. The ray and first-person camera stay at normal scale. Repeated hits cannot
+shrink a target indefinitely; either target can be hit first.
+
+The current voice line continues uninterrupted. Tiny Gru's higher-pitched voice follows his
+position near the ground, then original recorded complaints continue for about 26 seconds.
+Restart restores both targets, the mounted weapon, held items and dialogue.
+
+`GRU_CONFIG` in `src/gameplay/gru-scene.js` sets the vehicle scale to `0.12`, bucket scale to
+`0.22`, voice pitch to `1.85` and shrink duration to `0.8`. The full-size vehicle measures
+5.965 x 2.184 x 2.112 world units (length x width x height), within the original pickup limits.
+`fisherman.html?skin=gru&showcase` records a repeatable conversation, pickup, shot and miniature
+inspection using the same interactions as manual play. Add `&clean` to hide the interface.
 
 ## Controls
 
@@ -38,6 +65,10 @@ beside the pickup in the two human perspectives, with larger fish in Fisherman P
 | Truck Showcase, Record Mode | **T**, or Modes | Modes |
 
 Movement and shortcuts use physical keys, including when a Russian or other keyboard layout is active.
+
+**Gru skin:** **E / TAKE** picks up the ray; **F / Space / FIRE** fires through the reticle.
+Click or tap a visible point in the scene to shoot there. Drag to aim as usual. **T** or
+**Modes > Gru Showcase** starts the repeatable sequence; **TAKE CONTROL** returns to manual play.
 
 **Driver POV**
 
@@ -91,6 +122,13 @@ directory `dist`, root directory left empty (the repository root).
   entry to `SITE.games`.
 - `tools/bake-*.mjs` regenerate the meshes (`npm run bake`). The `verify-*` scripts and
   `check.mjs` are browser tests (Playwright; `npx playwright install chromium` first).
+- `npm run bake:gru` regenerates Gru's mesh. `npm run verify:gru` checks the production preview;
+  `node tools/verify-gru-bucket.mjs` covers both shrink targets and restart. `npm run verify:hub`
+  covers skin selection, persistence, keyboard/touch controls and all three POV launches.
+- Menu previews are lightweight JPEGs captured from the game. With the development server
+  running, `node tools/capture-previews.mjs --fisherman-skins` regenerates both Fisherman previews.
+- Original reference media, local transcripts and development reports are not included in this
+  repository or the production build. Browser checks include desktop and phone emulation.
 - See [ATTRIBUTION.md](ATTRIBUTION.md) for third-party code, the font and asset provenance.
 
 No open-source license is granted for this project's own code, art or branding. Third-party
