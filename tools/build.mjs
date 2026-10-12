@@ -80,7 +80,7 @@ copy('vendor/three/LICENSE', 'vendor/three/LICENSE.txt');
 
 // ------------------------------------------------------------------ assets
 for (const f of fs.readdirSync(path.join(ROOT, 'assets/brand'))) copy('assets/brand/' + f);
-for (const set of ['driver_dialogue.json', 'dialogue.json', 'gru_dialogue.json']) {
+for (const set of ['driver_dialogue.json', 'dialogue.json', 'gru_dialogue.json', 'ant_dialogue.json']) {
   const lines = JSON.parse(fs.readFileSync(path.join(ROOT, 'assets/audio', set), 'utf8'));
   copy('assets/audio/' + set);
   for (const line of Object.values(lines)) copy(line.file);

@@ -7,7 +7,7 @@ export const SITE = {
   subtitle: 'Choose your POV',
   studio: 'noclipepe games',
   handle: '@noclipepe',
-  description: 'Three perspectives on the State Property meme: the fisherman, the driver, and a fish already caught in a bucket. Free browser games by @noclipepe.',
+  description: 'Four perspectives on the State Property meme: the fisherman, the driver, a fish in a bucket, and an ant trying to deliver lunch. Free browser games by @noclipepe.',
 
   // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
   // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
@@ -36,6 +36,7 @@ export const SITE = {
     { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
     { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
     { id: 'fish', title: 'FISH POV', tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
+    { id: 'ant', title: 'ANT POV', tagline: 'Just trying to get home.', image: 'assets/brand/card-ant.jpg', isNew: true, available: true, launch: { page: 'ant.html' } },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.
