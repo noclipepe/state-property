@@ -2,9 +2,9 @@
 
 [![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
 
-Three playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
+Four playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
-![The series menu: Fisherman POV with skin selection, Driver POV and Fish POV](docs/screenshot.png)
+![The series menu: Fisherman POV with skin selection, Driver, Fish and Ant POV](docs/screenshot.png)
 
 ## The games
 
@@ -19,12 +19,17 @@ Three playable perspectives on the State Property meme, in the browser. Built fo
   argument, swim around, surface to hear clearly, and splash. The pickup eventually knocks
   the bucket over, spilling the water and fish onto the bank for a brief ending.
 
-All three start from one menu (`index.html`, "Choose your POV"). The Fisherman card has a
+- **Ant POV**: carry a crumb along the pickup and back to the colony in about 32 seconds while
+  the original argument continues overhead. Dodge the fisherman's boot and rod, wait for him
+  to haul the truck across the trail, then crawl beneath its detailed underbody to the anthill.
+  Red ground marks the actual impact areas. A hit retries from a nearby checkpoint.
+
+All four start from one menu (`index.html`, "Choose your POV"). The Fisherman card has a
 **SKIN: ORIGINAL / GRU** selector with a **NEW** badge. Original is the default; an explicit
 selection is remembered in this browser. The selector updates a static gameplay preview
 without loading a 3D scene or leaving the menu. Press PLAY to launch the selected version.
 Escape, clicking outside or tabbing away dismisses the panel. Arrow keys move between options;
-Enter or Space selects one. Driver POV and Fish POV keep their original characters.
+Enter or Space selects one. Driver, Fish and Ant POV keep their original characters.
 
 The same filled bucket appears beside the pickup in the two human perspectives, with larger
 fish in Fisherman POV.
@@ -49,6 +54,24 @@ Restart restores both targets, the mounted weapon, held items and dialogue.
 5.965 x 2.184 x 2.112 world units (length x width x height), within the original pickup limits.
 `fisherman.html?skin=gru&showcase` records a repeatable conversation, pickup, shot and miniature
 inspection using the same interactions as manual play. Add `&clean` to hide the interface.
+
+### Ant POV
+
+Open `ant.html` directly or choose **ANT POV — Just trying to get home.** in the menu.
+The opening shows a marching colony below the original characters, then continuously moves
+forward to the playable ant. The camera stays anchored during mouse/touch orbit and LOOK UP.
+
+The boot lands with a bass thud, dust and a brief shake; reduced motion disables the shake.
+The held rod sweeps the trail, then the player's approach triggers a strong truck pull. Its
+1.25-second warning precedes a 0.9-second move, so the pickup stops before the ant reaches
+the rear axle even with continuous forward input. Crawl between the wheels to deliver the
+crumb. The uninterrupted 61.864-second original recording continues through **CRUMB SECURED.**
+and finishes naturally without looping. Checkpoint retries preserve the dialogue.
+
+The original pickup has simple rectangular headlights, a grille and bumper trim. Closed wheel
+rims prevent seeing through the tires from underneath. Ant mode adds chassis, axles, suspension,
+drivetrain, exhaust, tank and spare tire detail in three material batches. A single soil grid
+avoids overlapping ground at the rear wheel; fine grass and trail crumbs use instanced meshes.
 
 ## Controls
 
@@ -89,6 +112,12 @@ and clear above the surface without restarting the clip. Subtitles and a repeata
 showcase are available from the pause menu; `fish.html?showcase&clean` starts a showcase with
 its interface hidden. Fish POV uses the original recordings in order, with no invented speech.
 
+**Ant POV controls:** **WASD / arrow keys** or the compact left joystick move the ant; forward
+follows the route and left/right dodge. Drag or swipe to look, **V / LOOK UP** looks overhead,
+and **C / TRAIL CAM** returns behind the ant. **Esc / P**, **R**, **M** and **H** pause, restart,
+mute and hide the interface. If autoplay is blocked, tap **TAP TO START**. Replay starts a new
+marching opening; automatic checkpoint retries skip it.
+
 ## Run it locally
 
 Requires Node.js 22.2 or newer. three.js is included in `vendor/`, so playing needs no packages.
@@ -104,7 +133,7 @@ work.
 ## Build
 
 ```bash
-npm run build   # -> dist/ (the menu and all three game pages, ready to host as static files)
+npm run build   # -> dist/ (the menu and all four game pages, ready to host as static files)
 ```
 
 The build copies only what the pages use, packs the meshes, fills in share metadata and creator
@@ -124,7 +153,12 @@ directory `dist`, root directory left empty (the repository root).
   `check.mjs` are browser tests (Playwright; `npx playwright install chromium` first).
 - `npm run bake:gru` regenerates Gru's mesh. `npm run verify:gru` checks the production preview;
   `node tools/verify-gru-bucket.mjs` covers both shrink targets and restart. `npm run verify:hub`
-  covers skin selection, persistence, keyboard/touch controls and all three POV launches.
+  covers skin selection, persistence, keyboard/touch controls and all four POV launches.
+- With the local server running, `node tools/verify-ant-mode.mjs http://localhost:8080/` checks
+  the opening, camera tracking, physical warnings/collisions, checkpoints, delivery at 60/20 Hz,
+  and desktop/touch controls. `node tools/verify-ant-route.mjs http://localhost:8080/` also checks
+  real-time keyboard delivery and the complete audio recording without repeats. Phone checks
+  use Chromium emulation; physical iOS/Android devices have not been tested.
 - Menu previews are lightweight JPEGs captured from the game. With the development server
   running, `node tools/capture-previews.mjs --fisherman-skins` regenerates both Fisherman previews.
 - Original reference media, local transcripts and development reports are not included in this

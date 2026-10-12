@@ -47,11 +47,11 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
       sideBySide: cards.length > 1 && Math.abs(cards[0].getBoundingClientRect().top - cards[1].getBoundingClientRect().top) < 2,
     };
   });
-  check('menu: three playable POV cards with screenshots', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html?skin=original,DRIVER POV>driver.html,FISH POV>fish.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
+  check('menu: four playable POV cards with screenshots', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html?skin=original,DRIVER POV>driver.html,FISH POV>fish.html,ANT POV>ant.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
   check('Fish POV replaces the secret teaser', await page.locator('.card.teaser').count() === 0 && await page.locator('[data-game=fish] .card-tag').textContent() === "You're already caught.");
-  check('Only the Fisherman skin selector has a NEW badge; Fish POV has none', await page.evaluate(() => {
+  check('Fisherman skin selector and Ant POV have NEW badges; Fish POV has none', await page.evaluate(() => {
     const badge=document.querySelector('[data-game=fisherman] .skin-toggle .new-badge');
-    return document.querySelectorAll('.new-badge').length===1 && badge?.textContent==='NEW' && !document.querySelector('[data-game=fish] .new-badge');
+    return document.querySelectorAll('.new-badge').length===2 && badge?.textContent==='NEW' && document.querySelector('[data-game=ant] .new-badge')?.textContent==='NEW' && !document.querySelector('[data-game=fish] .new-badge');
   }));
   check('menu loads no 3D (no three.js, meshes or canvas)', !hub.three && hub.canvas === 0);
   check('menu uses the brand font and the supplied background', hub.font && /assets\/brand\/background/.test(hub.bg));
@@ -141,7 +141,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.evaluate(() => addEventListener('pagehide', () => sessionStorage.setItem('exitAudio', window.__game.audio.ctx.state)));
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-games')]);
   await hubReady(page);
-  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 3);
+  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 4);
 
   await choose('original');
   check('switching back restores Original preview and its saved preference', (await skinState()).image.endsWith('card-fisherman.jpg') && (await skinState()).stored === 'original' && !(await skinState()).open);
@@ -182,7 +182,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.waitForFunction(() => !document.getElementById('end').hidden, null, { timeout: 20000 });
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-other')]);
   await hubReady(page);
-  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 3);
+  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 4);
   await page.click('.card[data-game=fish] .btn-play');
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
   check('Fish POV needs no second PLAY after loading', await page.evaluate(() => __game.mode === 'play' && !document.querySelector('#btn-go')));
@@ -191,7 +191,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.click('#btn-pause');
   await page.click('#btn-games');
   await hubReady(page);
-  check('Fish POV returns to the three-mode menu', (await page.locator('.card .btn-play').count()) === 3);
+  check('Fish POV returns to the four-mode menu', (await page.locator('.card .btn-play').count()) === 4);
   check('playing Driver and Fish preserves the Fisherman preference', (await skinState()).stored === 'gru' && (await skinState()).label === 'SKIN: GRU');
   await ctx.close();
 }
@@ -261,12 +261,13 @@ for (const [w, h, label] of [[320, 568, 'phone'], [360, 800, 'phone'], [390, 844
       fits: document.scrollingElement.scrollHeight <= innerHeight + 1,
       noHorizontalScroll: document.scrollingElement.scrollWidth <= innerWidth + 1,
       stacked: cards.every((c, i) => i === 0 || c.top >= cards[i - 1].bottom), side: cards.every((c) => Math.abs(c.top - cards[0].top) < 2),
+      nonOverlapping: cards.every((a,i)=>cards.every((b,j)=>i===j||a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top)),
       plays: plays.every((p) => p.height >= 48), social: social.every((s) => s.height >= 44 && s.width >= 44),
       bottom: Math.round(social[0].bottom), h: innerHeight,
     };
   });
-  const arrangement = label === 'phone' ? L.stacked : L.side;
-  check(`${w}x${h}: ${label === 'phone' ? 'cards stacked' : 'cards side by side'}, no horizontal overflow, PLAY >= 48 px, links >= 44 px`,
+  const arrangement = label === 'phone' ? L.stacked : L.nonOverlapping;
+  check(`${w}x${h}: ${label === 'phone' ? 'cards stacked' : 'cards reflow in rows'}, no horizontal overflow, PLAY >= 48 px, links >= 44 px`,
     arrangement && L.noHorizontalScroll && L.plays && L.social, `social block ends at ${L.bottom}/${L.h}; vertical scrolling ${!L.fits}`);
   await page.screenshot({ path: `${out}/hub-${w}x${h}.png` });
   await page.tap('#choose-skin');
