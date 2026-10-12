@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { loadPack } from '../util/pack.js';
 import { patchMaterial } from './shading.js';
+import { addTruckFront } from './truck-front.js';
 
 export async function loadTruck(onProgress) {
   const pack = await loadPack(new URL('../../assets/meshes/truck', import.meta.url).href, onProgress);
@@ -48,6 +49,7 @@ export class Truck {
     // tow hook
     this.towHook = mk('towHook');
     this.body.add(this.towHook);
+    this.frontDetails = addTruckFront(this);
 
     this.#buildGlass();
     this.#buildWheels();
@@ -241,11 +243,17 @@ export class Truck {
 
           diffuseColor.rgb *= 0.85 + 0.25 * tread; }`),
     });
-    const rimGeo = new THREE.CylinderGeometry(0.205, 0.21, 0.2, 32, 1, true);
+    // Closed barrel meets the tyre's inner bead. Both caps must exist: ant-height
+    // views see the inboard side, where the old open cylinder/one-sided face vanished.
+    const rimGeo = new THREE.CylinderGeometry(0.235, 0.235, 0.16, 32);
     rimGeo.rotateX(Math.PI / 2);
     const rimFace = new THREE.CircleGeometry(0.205, 32);
     const rimMat = new THREE.MeshStandardMaterial({ color: 0xb8bcc0, roughness: 0.3, metalness: 0.9 });
     const hubMat = new THREE.MeshStandardMaterial({ color: 0x8d9196, roughness: 0.35, metalness: 0.9 });
+    const brakeGeo = new THREE.CylinderGeometry(.115,.115,.065,24);brakeGeo.rotateX(Math.PI/2);
+    const brakeMat = new THREE.MeshStandardMaterial({ color:0x41494b, roughness:.78, metalness:.3 });
+    const slotGeo = new THREE.BoxGeometry(0.05, 0.022, 0.01);
+    const slotMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.8 });
     this.wheels = [];
     const positions = [[D.axleF, 1], [D.axleF, -1], [D.axleR, 1], [D.axleR, -1]];
     for (const [x, s] of positions) {
@@ -256,17 +264,19 @@ export class Truck {
       const tyre = new THREE.Mesh(tyreGeo, tyreMat);
       tyre.castShadow = true; tyre.receiveShadow = true;
       spin.add(tyre);
-      const rim = new THREE.Mesh(rimGeo, rimMat); spin.add(rim);
+      const rim = new THREE.Mesh(rimGeo, rimMat);rim.name='closed-wheel-rim';rim.castShadow=true;rim.receiveShadow=true;spin.add(rim);
       const face = new THREE.Mesh(rimFace, rimMat);
-      face.position.z = s * 0.06; face.rotation.y = s > 0 ? 0 : Math.PI;
+      face.position.z = s * 0.084; face.rotation.y = s > 0 ? 0 : Math.PI;
       spin.add(face);
       const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.05, 16), hubMat);
-      hub.rotation.x = Math.PI / 2; hub.position.z = s * 0.08; spin.add(hub);
+      hub.rotation.x = Math.PI / 2; hub.position.z = s * 0.10; spin.add(hub);
+      const brake = new THREE.Mesh(brakeGeo,brakeMat);brake.name='inboard-brake-drum';brake.position.z=-s*.092;
+      brake.castShadow=true;brake.receiveShadow=true;spin.add(brake);
       // lug nuts / slots for visible rotation
       for (let i = 0; i < 6; i++) {
         const a = (i / 6) * Math.PI * 2;
-        const slot = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.022, 0.01), new THREE.MeshStandardMaterial({ color: 0x1b1b1b, roughness: 0.8 }));
-        slot.position.set(Math.cos(a) * 0.14, Math.sin(a) * 0.14, s * 0.062);
+        const slot = new THREE.Mesh(slotGeo, slotMat);
+        slot.position.set(Math.cos(a) * 0.14, Math.sin(a) * 0.14, s * 0.088);
         slot.rotation.z = a;
         spin.add(slot);
       }

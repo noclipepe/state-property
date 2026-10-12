@@ -81,7 +81,7 @@ html, body.hub-page { overflow: auto; height: auto; min-height: 100%; }
 
 /* wide screens: the cards side by side, picture on top */
 @media (min-width: 640px) {
-  .cards { max-width: 1000px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .cards { max-width: 1280px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
   .card { grid-template-columns: 1fr; grid-template-rows: auto 1fr; align-items: start; padding: 12px; }
   .card-body { display: flex; flex-direction: column; align-items: center; text-align: center; height: 100%; }
   .card .btn-play { width: 100%; margin-top: auto; }

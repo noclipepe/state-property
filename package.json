@@ -2,7 +2,7 @@
   "name": "state-property",
   "version": "1.0.0",
   "private": true,
-  "description": "Three playable perspectives on the State Property meme. Built for desktop and mobile.",
+  "description": "Four playable perspectives on the State Property meme. Built for desktop and mobile.",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
@@ -22,7 +22,10 @@
     "serve:dist": "node tools/serve.mjs 8090 dist",
     "previews": "node tools/capture-previews.mjs",
     "bake:gru": "node tools/bake-character.mjs --gru",
-    "verify:gru": "node tools/verify-gru.mjs"
+    "verify:gru": "node tools/verify-gru.mjs",
+    "verify:ant": "node tools/verify-ant-mode.mjs",
+    "verify:ant:route": "node tools/verify-ant-route.mjs",
+    "previews:ant": "node tools/capture-ant-mode.mjs http://127.0.0.1:8095/ --card"
   },
   "dependencies": {
     "three": "^0.186.1"
