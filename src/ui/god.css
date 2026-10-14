@@ -1,0 +1,42 @@
+/* GOD POV shares the original world and lavender menu chrome. Only the canvas
+   consumes gestures; this stylesheet is never loaded by the scrollable hub. */
+#stage { position:fixed; inset:0; overflow:hidden; background:#b5c5b4; }
+#view { display:block; width:100%; height:100%; touch-action:none; outline:none; }
+[hidden] { display:none !important; }
+button,a { -webkit-user-select:none; user-select:none; }
+button { cursor:pointer; font:inherit; }
+button:focus-visible,a:focus-visible { outline:3px solid #ffe3a0; outline-offset:3px; }
+#hud { position:absolute; inset:0; pointer-events:none; }
+#hud button,#hud a { pointer-events:auto; touch-action:manipulation; }
+#hud #target-plug { touch-action:none; }
+.god-top { position:absolute; top:calc(var(--safe-t) + 12px); left:calc(var(--safe-l) + 14px); right:calc(var(--safe-r) + 14px); display:flex; align-items:center; gap:12px; }
+.god-top>span { color:#fff5d5; letter-spacing:.14em; font-size:13px; text-shadow:0 1px 6px #263121; }
+.god-top>div { margin-left:auto; display:flex; gap:7px; }
+.god-top button,.god-top a,#btn-skip { border:1px solid #eee6ffb3; background:#352c608c; color:#fff9ec; border-radius:999px; padding:10px 14px; min-height:44px; text-decoration:none; font-size:11px; backdrop-filter:blur(8px); }
+#btn-reset { color:#fff0b8; }
+#btn-skip { position:absolute; right:18px; bottom:calc(var(--safe-b) + 24px); }
+.god-bottom { position:absolute; bottom:calc(var(--safe-b) + 14px); left:50%; transform:translateX(-50%); width:min(580px,calc(100% - 28px)); display:grid; justify-items:center; gap:8px; }
+/* Reserve two hint lines even when empty, so notices never shift the dialogue. */
+#notice { margin:0; height:3em; display:grid; align-content:center; text-align:center; color:#fff1c9; font-size:12px; line-height:1.5; text-shadow:0 1px 4px #1c2112,0 1px 8px #1c2112; }
+#subtitle { text-align:center; max-width:520px; font-size:clamp(16px,1.5vw,20px); line-height:1.5; padding:5px 12px; border-radius:7px; background:#19231eb0; text-shadow:0 1px 2px #000; }
+#hud:has(#btn-skip:not([hidden])) #subtitle { margin-bottom:40px; }
+#subtitle:empty { display:none; }
+#powers { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); width:100%; border:1px solid #fff4cc80; border-radius:18px; background:linear-gradient(180deg,#302943ba,#282333dd); padding:6px; gap:5px; backdrop-filter:blur(12px); box-shadow:0 8px 30px #18221b33; }
+#powers button { min-width:0; min-height:76px; border:1px solid #fff0d03d; border-radius:12px; background:#ddd0fd16; color:#fff4d1; display:grid; align-content:center; justify-items:center; gap:3px; padding:5px 2px; }
+#powers button>span { font:28px/1 Georgia,serif; height:28px; }
+#powers b { font-size:11px; font-weight:400; } #powers small { font:10px/1.4 system-ui,sans-serif; color:#e0d9d5; }
+#powers button:hover:not(:disabled),#powers .active { background:#f8d78d33; border-color:#ffe8ab; }
+#powers button:disabled { opacity:.55; cursor:default; } #powers button.done { color:#d0e8bb; } #powers button.done>span::after { content:'✓'; font-size:14px; vertical-align:middle; }
+.world-target { position:absolute; transform:translate(-50%,-100%); min-height:44px; min-width:62px; border:1px solid #fce2a8b0; border-radius:24px; background:#332d36ad; color:#ffe9b3; font-size:11px; padding:8px 12px; backdrop-filter:blur(4px); }
+.world-target::after { content:''; position:absolute; left:50%; bottom:-9px; width:1px; height:9px; background:#ffe8ab; }
+#target-ant { transform:translate(0,-50%); }
+#target-ant::after { left:-9px; bottom:50%; width:9px; height:1px; }
+#god-title { position:absolute; top:27%; left:0; right:0; display:grid; gap:12px; justify-items:center; text-shadow:0 3px 30px #704d1d; color:#fff1c7; }
+#god-title strong { font-size:clamp(42px,8vw,84px); font-weight:400; letter-spacing:.09em; } #god-title small { letter-spacing:.3em; font-size:11px; } #god-title span { font-size:16px; }
+.god-start { position:absolute; inset:0; overflow:auto; display:grid; place-items:center; padding:30px 22px; background:linear-gradient(135deg,#514a7ede,#a8ace1d9),url('../../assets/brand/background.webp') center/cover; }
+.god-start-inner { text-align:center; width:min(420px,100%); } .god-start h1 { font-weight:400; font-size:clamp(44px,10vw,66px); margin:15px 0 8px; color:#fff1cf; text-shadow:0 2px 24px #e7c29270; }
+.god-start p { font-size:13px; line-height:1.8; } .god-start .tagline { font-size:18px; margin:0 0 25px; } .god-start a { color:#fff0d5; font-size:12px; display:inline-block; padding:14px; }
+.god-start .instructions { margin:24px 0 10px; } .god-start .instructions small { color:#e3dcee; }
+.god-start .btn-play { margin:18px auto; min-height:54px; width:100%; } .load-bar { height:4px; border-radius:4px; background:#ffffff35; overflow:hidden; } #load-fill { background:#ffe5a9; width:0; height:100%; } #load-text { min-height:24px; color:#f4eafa; font-size:11px; }
+@media(max-width:520px) { .god-top { gap:6px; left:10px; right:10px; } .god-top>span { display:none; } .god-top button,.god-top a { padding:10px 11px; font-size:10px; } .god-bottom { bottom:calc(var(--safe-b) + 10px); width:calc(100% - 20px); } #powers b { font-size:10px; } #powers small { font-size:9px; } }
+@media(orientation:landscape) and (max-height:540px) { .god-top { top:calc(var(--safe-t) + 7px); } .god-bottom { width:min(490px,calc(100% - 120px)); gap:4px; bottom:calc(var(--safe-b) + 7px); } #powers button { min-height:53px; grid-template-columns:25px 1fr; gap:1px; } #powers button>span { grid-row:1/3; font-size:25px; } #powers small { grid-column:2; } #notice { font-size:10px; } #subtitle { font-size:14px; } }

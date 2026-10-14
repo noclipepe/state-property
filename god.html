@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7972bd"><title>STATE PROPERTY · God POV</title>
+<meta name="description" content="Divine intervention. Four powers, one very familiar argument.">
+<link rel="canonical" href="{{pageUrl}}"><meta property="og:type" content="website"><meta property="og:title" content="STATE PROPERTY · God POV"><meta property="og:description" content="Divine intervention."><meta property="og:url" content="{{pageUrl}}"><meta property="og:image" content="{{ogImage}}"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any"><link rel="preload" href="assets/brand/newrodin-db.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="src/ui/brand.css"><link rel="stylesheet" href="src/ui/god.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+<script>document.documentElement.classList.toggle('touch',matchMedia('(pointer: coarse)').matches||'ontouchstart' in window);</script>
+</head><body><main id="stage">
+<canvas id="view" tabindex="0" aria-label="God POV. Drag the pickup, pull the lake plug, or tap the ant. Power buttons also support keyboard controls."></canvas>
+<div id="hud" hidden>
+  <header class="god-top"><a id="btn-menu" href="index.html">← MENU</a><span>GOD POV</span><div><button id="btn-sound" aria-label="Toggle sound">SOUND ON</button><button id="btn-reset">RESET WORLD</button></div></header>
+  <button id="btn-skip" hidden>SKIP INTRO →</button>
+  <div id="god-title" hidden><small>STATE PROPERTY</small><strong>GOD POV</strong><span>Divine intervention.</span></div>
+  <button id="target-plug" class="world-target" hidden aria-label="Pull the lake plug">PULL ↑</button>
+  <button id="target-ant" class="world-target" hidden aria-label="Grow the ant">GROW +</button>
+  <div class="god-bottom"><div id="subtitle" aria-live="off"></div><p id="notice" role="status"></p>
+    <nav id="powers" aria-label="Divine powers" hidden>
+      <button id="btn-plug" title="Grab the plug (1), then drag up or press ↑ to pull"><span aria-hidden="true">⏣</span><b>PLUG</b><small>Grab / pull ↑</small></button>
+      <button id="btn-truck" title="Lift the pickup (2). Arrow keys move, Enter places."><span aria-hidden="true">↟</span><b>PICKUP</b><small>Drag / place</small></button>
+      <button id="btn-ant" title="Grow the ant (3)"><span aria-hidden="true">✧</span><b>GIANT ANT</b><small>Think bigger</small></button>
+      <button id="btn-weather" title="Summon a fish thunderstorm (4)"><span aria-hidden="true">☁</span><b>FISH RAIN</b><small>Change forecast</small></button>
+    </nav>
+  </div>
+</div>
+<section id="start" class="god-start"><div class="god-start-inner">
+  <p>STATE PROPERTY · by @noclipepe</p><h1>GOD POV</h1><p class="tagline">Divine intervention.</p>
+  <div class="load-bar"><div id="load-fill"></div></div><p id="load-text" aria-live="polite">Making room for a higher power…</p>
+  <button id="btn-enter" class="btn-play" hidden>ENTER GOD POV</button><button id="btn-retry" hidden>TRY AGAIN</button>
+  <p class="instructions">Pull the lake plug. Move the pickup.<br>Grow an ant. Make it rain fish.<br><small>Tap or drag. You decide what happens.</small></p>
+  <a href="index.html">← BACK TO MENU</a>
+</div></section>
+</main><noscript>Turn on JavaScript to play.</noscript><script type="module" src="src/god/main.js"></script></body></html>

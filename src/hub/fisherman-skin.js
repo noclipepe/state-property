@@ -10,7 +10,6 @@ export function createFishermanSkinPicker({ card, img, launch, originalImage }) 
   picker.className = 'fisherman-skin';
   picker.innerHTML = `
     <button class="skin-toggle" id="choose-skin" type="button" aria-expanded="false" aria-controls="skin-options">
-      <span class="new-badge">NEW</span>
       <span id="skin-current"></span><span class="skin-chevron" aria-hidden="true">▾</span>
     </button>
     <div id="skin-options" class="skin-options" role="group" aria-label="Fisherman POV skin" hidden>
@@ -30,7 +29,7 @@ export function createFishermanSkinPicker({ card, img, launch, originalImage }) 
     selected = skin;
     const choice = skins[skin];
     picker.querySelector('#skin-current').textContent = `SKIN: ${choice.label.toUpperCase()}`;
-    toggle.setAttribute('aria-label', `New. Skin: ${choice.label}. Choose Fisherman POV skin`);
+    toggle.setAttribute('aria-label', `Skin: ${choice.label}. Choose Fisherman POV skin`);
     for (const button of buttons) button.setAttribute('aria-pressed', String(button.dataset.skin === skin));
     img.src = choice.image;
     img.alt = choice.alt;
