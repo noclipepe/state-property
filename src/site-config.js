@@ -7,7 +7,7 @@ export const SITE = {
   subtitle: 'Choose your POV',
   studio: 'noclipepe games',
   handle: '@noclipepe',
-  description: 'Four perspectives on the State Property meme: the fisherman, the driver, a fish in a bucket, and an ant trying to deliver lunch. Free browser games by @noclipepe.',
+  description: 'Five perspectives on the State Property meme: fisherman, driver, fish, ant, and divine intervention. Free browser games by @noclipepe.',
 
   // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
   // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
@@ -23,7 +23,7 @@ export const SITE = {
   // The series menu (index.html), in this order. To add a game later, add an entry:
   //   id         unique, lowercase
   //   title      shown on the card
-  //   isNew      true shows a small NEW badge above the title
+  //   isNew      true highlights the card and shows a small NEW badge above the title
   //   tagline    a few words under the title
   //   image      card screenshot, 16:10 (assets/brand/card-<id>.jpg; tools/capture-previews.mjs makes them)
   //   available  false shows the card greyed out with "Not available yet" and no PLAY button
@@ -36,7 +36,8 @@ export const SITE = {
     { id: 'fisherman', title: 'FISHERMAN POV', tagline: 'You hold the rod', image: 'assets/brand/card-fisherman.jpg', available: true, launch: { page: 'fisherman.html' } },
     { id: 'driver', title: 'DRIVER POV', tagline: 'You drive the pickup', image: 'assets/brand/card-driver.jpg', available: true, launch: { page: 'driver.html' } },
     { id: 'fish', title: 'FISH POV', tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
-    { id: 'ant', title: 'ANT POV', tagline: 'Just trying to get home.', image: 'assets/brand/card-ant.jpg', isNew: true, available: true, launch: { page: 'ant.html' } },
+    { id: 'ant', title: 'ANT POV', tagline: 'Just trying to get home.', image: 'assets/brand/card-ant.jpg', available: true, launch: { page: 'ant.html' } },
+    { id: 'god', title: 'GOD POV', tagline: 'Divine intervention.', image: 'assets/brand/card-god.jpg', isNew: true, available: true, launch: { page: 'god.html' } },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.

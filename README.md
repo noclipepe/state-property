@@ -2,9 +2,9 @@
 
 [![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
 
-Four playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
+Five playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
-![The series menu: Fisherman POV with skin selection, Driver, Fish and Ant POV](docs/screenshot.png)
+![The series menu: Fisherman POV with skin selection, Driver, Fish, Ant and God POV](docs/screenshot.png)
 
 ## The games
 
@@ -24,12 +24,18 @@ Four playable perspectives on the State Property meme, in the browser. Built for
   to haul the truck across the trail, then crawl beneath its detailed underbody to the anthill.
   Red ground marks the actual impact areas. A hit retries from a nearby checkpoint.
 
-All four start from one menu (`index.html`, "Choose your POV"). The Fisherman card has a
-**SKIN: ORIGINAL / GRU** selector with a **NEW** badge. Original is the default; an explicit
+- **God POV**: rise from the argument into a divine view, pull the lake plug, pick up the truck,
+  grow a giant ant and summon a fish thunderstorm. The powers share one world and work in any
+  order. The giant ant follows and pushes the pickup, then eats fallen fish.
+
+All five start from one menu (`index.html`, "Choose your POV"). On phones, the looping carousel
+swipes in either direction and snaps to a card, with neighboring cards peeking in at the edges.
+Only God POV has a **NEW** badge and a gold outline. The Fisherman card has a
+**SKIN: ORIGINAL / GRU** selector. Original is the default; an explicit
 selection is remembered in this browser. The selector updates a static gameplay preview
 without loading a 3D scene or leaving the menu. Press PLAY to launch the selected version.
 Escape, clicking outside or tabbing away dismisses the panel. Arrow keys move between options;
-Enter or Space selects one. Driver, Fish and Ant POV keep their original characters.
+Enter or Space selects one. Driver, Fish, Ant and God POV keep their original characters.
 
 The same filled bucket appears beside the pickup in the two human perspectives, with larger
 fish in Fisherman POV.
@@ -72,6 +78,22 @@ The original pickup has simple rectangular headlights, a grille and bumper trim.
 rims prevent seeing through the tires from underneath. Ant mode adds chassis, axles, suspension,
 drivetrain, exhaust, tank and spare tire detail in three material batches. A single soil grid
 avoids overlapping ground at the rear wheel; fine grass and trail crumbs use instanced meshes.
+
+### God POV
+
+Open `god.html` directly or choose **GOD POV** from the menu. The four-second introduction starts
+close to the fisherman and the driver, turns toward gathering clouds and golden light, then
+rises into a stable three-quarter view. It can be skipped; Reset World does not replay it.
+
+An articulated first-person hand grips the plug ring and pickup. Pull the ring upward to drain
+the lake, then place the truck on its exposed bed. The glowing giant ant follows the truck
+immediately, pushes it when grounded, and eats nearby fallen fish. A storm drops one fish,
+pauses, then rains a bounded burst that interacts with the truck, ground and remaining water.
+The fisherman turns toward the moved truck; both voices follow their speakers' positions.
+
+The original argument continues underneath synthesized divine choir, wind and impact sounds.
+Larger subtitles stay above a reserved hint area, so appearing or expiring instructions do not
+move the dialogue. Reset World restores all powers, weather, audio and active gestures.
 
 ## Controls
 
@@ -118,6 +140,12 @@ and **C / TRAIL CAM** returns behind the ant. **Esc / P**, **R**, **M** and **H*
 mute and hide the interface. If autoplay is blocked, tap **TAP TO START**. Replay starts a new
 marching opening; automatic checkpoint retries skip it.
 
+**God POV controls:** drag the plug upward or use **PLUG**, then pull it with the hand.
+Drag the pickup with one finger or the mouse and release to place it. Tap **GIANT ANT** and
+**FISH RAIN** for the other powers. **1–4** select powers; arrow keys move a held pickup or pull
+the plug upward, **Enter** places the pickup and **R** resets the world. **SOUND ON/OFF** toggles audio.
+The on-screen **RESET WORLD** and **MENU** controls remain available on phones.
+
 ## Run it locally
 
 Requires Node.js 22.2 or newer. three.js is included in `vendor/`, so playing needs no packages.
@@ -133,7 +161,7 @@ work.
 ## Build
 
 ```bash
-npm run build   # -> dist/ (the menu and all four game pages, ready to host as static files)
+npm run build   # -> dist/ (the menu and all five game pages, ready to host as static files)
 ```
 
 The build copies only what the pages use, packs the meshes, fills in share metadata and creator
@@ -153,7 +181,12 @@ directory `dist`, root directory left empty (the repository root).
   `check.mjs` are browser tests (Playwright; `npx playwright install chromium` first).
 - `npm run bake:gru` regenerates Gru's mesh. `npm run verify:gru` checks the production preview;
   `node tools/verify-gru-bucket.mjs` covers both shrink targets and restart. `npm run verify:hub`
-  covers skin selection, persistence, keyboard/touch controls and all four POV launches.
+  covers skin selection, persistence, keyboard/touch controls and all five POV launches.
+- `node tools/verify-god.mjs http://localhost:8080/` checks the intro, all four powers in
+  different orders, resets, release/cancellation, mobile touch controls and navigation.
+  The other `verify-god-*` scripts cover hand grip, atmosphere, ant behavior and spatial audio.
+  `node tools/verify-hub-touch.mjs http://localhost:8080/` checks real emulated touch swipes,
+  short-swipe snapping, looping, navigation and slow or failed preview loading.
 - With the local server running, `node tools/verify-ant-mode.mjs http://localhost:8080/` checks
   the opening, camera tracking, physical warnings/collisions, checkpoints, delivery at 60/20 Hz,
   and desktop/touch controls. `node tools/verify-ant-route.mjs http://localhost:8080/` also checks

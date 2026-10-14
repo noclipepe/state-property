@@ -213,7 +213,7 @@ export class Bucket {
 }
 
 // Two small silver fish share the bucket. The player's own body stays out of view.
-function makeFish(backColor) {
+export function makeFish(backColor) {
   const root = new THREE.Group();
   const bodyMat = new THREE.MeshStandardMaterial({ color: 0xd4d7bb, roughness: 0.38, metalness: 0.25 });
   const backMat = new THREE.MeshStandardMaterial({ color: backColor, roughness: 0.48, metalness: 0.15 });

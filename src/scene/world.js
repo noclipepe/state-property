@@ -103,7 +103,7 @@ export function createWorld(renderer, quality, opts = {}) {
 
   const trample = new TrampleMap(256);
   return {
-    scene, sun, hemi, grass, trees, trample,
+    scene, sun, hemi, grass, trees, trample, ground, pond, sky,
     update(dt, focus) {
       globalUniforms.uTime.value += dt;
       trample.update();
@@ -341,7 +341,7 @@ function makeTrees(scene, quality) {
   leaves.frustumCulled = false;
   scene.add(leaves);
   canopy.forEach((c, i) => { if (i < 4) globalUniforms.uCanopy.value[i].copy(c); });
-  return { leaves, list };
+  return { leaves, trunks, branches, cores, list };
 }
 
 function makeGuardrail() {

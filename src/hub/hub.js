@@ -3,6 +3,7 @@
 import { SITE } from '../site-config.js';
 import { track } from '../analytics.js';
 import { createFishermanSkinPicker } from './fisherman-skin.js';
+import { createCarousel } from './carousel.js';
 
 const list = document.getElementById('games');
 for (const g of SITE.games) {
@@ -10,6 +11,7 @@ for (const g of SITE.games) {
   const live = g.available && !!target;
   const card = document.createElement('article');
   card.className = 'card' + (live ? '' : g.teaser ? ' teaser' : ' off');
+  card.classList.toggle('is-new', !!g.isNew);
   card.dataset.game = g.id;
 
   const shot = document.createElement('div');
@@ -53,6 +55,7 @@ for (const g of SITE.games) {
   card.append(shot, body);
   list.append(card);
 }
+createCarousel(list);
 
 for (const a of document.querySelectorAll('a[data-link]')) {
   const key = a.dataset.link;

@@ -158,7 +158,7 @@ await page.tap('#btn-games');
 await page.waitForFunction(() => window.__hubReady);
 const exit = JSON.parse(await page.evaluate(() => sessionStorage.getItem('fishExit')));
 check('Returning to the menu stops speech and all sound', exit.state === 'suspended' && !exit.clip && exit.muted, JSON.stringify(exit));
-check('Menu has three available modes and a real Fish POV image', await page.evaluate(() => document.querySelectorAll('.card .btn-play').length === 3 && document.querySelector('[data-game=fish] img').naturalWidth > 0));
+check('Menu has five available modes and a real Fish POV image', await page.evaluate(() => document.querySelectorAll('.card .btn-play').length === 5 && document.querySelector('[data-game=fish] img').naturalWidth > 0));
 check('No browser or shader errors', errors.length === 0, errors.slice(0,3).join(' | '));
 await browser.close();
 console.log(`${checks.filter(Boolean).length}/${checks.length} passed`);
