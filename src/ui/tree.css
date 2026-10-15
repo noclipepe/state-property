@@ -1,0 +1,99 @@
+/* WITNESS POV: a full-screen first-person view with quiet chrome, the binocular lenses, two
+   stealth-style suspicion meters and the series' lavender start and end cards. */
+#stage { position: fixed; inset: 0; overflow: hidden; background: #9fb3a0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+#view { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; outline: none; cursor: zoom-in; }
+#view.holding { cursor: grabbing; }
+button { cursor: pointer; font: inherit; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.noscript { position: fixed; inset: auto 16px 40% 16px; text-align: center; color: var(--ink); }
+
+/* ---- binocular lenses: two overlapping soft circles cut out of a dark frame */
+#lens { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0; }
+#flash { position: absolute; inset: 0; pointer-events: none; background: #f4fffb; opacity: 0; }
+#flash.on { animation: flash 0.7s ease-out; }
+@keyframes flash { from { opacity: 0.95; } to { opacity: 0; } }
+
+/* ---- HUD */
+#hud { position: absolute; inset: 0; pointer-events: none; color: #fff; }
+#hud button, #hud a { pointer-events: auto; touch-action: manipulation; }
+.tree-top { position: absolute; top: calc(var(--safe-t) + 10px); left: calc(var(--safe-l) + 12px); right: calc(var(--safe-r) + 12px); display: flex; align-items: center; gap: 10px; }
+.tree-name { font-size: 12px; letter-spacing: 0.14em; text-shadow: 0 1px 5px #1d2716; }
+.tree-actions { margin-left: auto; display: flex; gap: 6px; }
+.tree-pill { display: inline-grid; place-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid #ecf6e6aa; background: #26311f8c;
+  color: #fbfff4; font-size: 11px; letter-spacing: 0.05em; text-decoration: none; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.tree-pill:hover { background: #3a4a2fb0; }
+.stance { position: absolute; top: calc(var(--safe-t) + 64px); left: calc(var(--safe-l) + 14px); margin: 0; display: flex; align-items: center; gap: 7px;
+  font-size: 11px; letter-spacing: 0.1em; padding: 6px 11px 6px 8px; border-radius: 999px; background: #1c2615a0; border: 1px solid #ffffff40; }
+.stance svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.stance.hidden .eye-open, .stance:not(.hidden) .eye-shut { display: none; }
+.stance:not(.hidden) { background: #3b2f12b8; border-color: #ffe39a99; color: #fff3c9; }
+
+/* suspicion meters: eye icon, bar and state words, so nothing depends on colour alone */
+.meter { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 3px; transform: translate(-50%, -100%); transition: opacity 0.2s; }
+.m-icon { position: relative; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #1b1f17cc; border: 2px solid #fff;
+  box-shadow: 0 2px 10px #0006; }
+.m-icon svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; }
+.m-icon svg circle { fill: #fff; transform-origin: 12px 12px; transform: scale(0.6); transition: transform 0.2s; }
+.m-icon b { display: none; font: 400 24px/1 var(--font); color: #fff; }
+.m-icon i { position: absolute; right: -9px; top: -8px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #fff; color: #222; font: 400 12px/18px var(--font); font-style: normal; text-align: center; display: none; }
+.m-track { width: 76px; height: 8px; border-radius: 4px; background: #0b0e09b8; border: 1px solid #ffffffb0; overflow: hidden; }
+.m-track span { display: block; height: 100%; width: 0; background: repeating-linear-gradient(90deg, #ffe08a 0 6px, #ffd15c 6px 9px); }
+.m-label { margin: 0; font-size: 10px; letter-spacing: 0.08em; white-space: nowrap; padding: 2px 7px; border-radius: 6px; background: #151b11b0; }
+.meter.lvl1 .m-icon i, .meter.lvl2 .m-icon i { display: block; }
+.meter.lvl1 .m-icon i::after { content: '?'; }
+.meter.lvl2 .m-icon i::after { content: '?!'; }
+.meter.lvl1 .m-icon svg circle { transform: scale(0.85); }
+.meter.lvl2 .m-icon { border-color: #ffb056; animation: pulse 0.9s ease-in-out infinite; }
+.meter.lvl2 .m-icon svg circle { transform: scale(1.05); }
+.meter.lvl2 .m-track span { background: repeating-linear-gradient(90deg, #ffa043 0 6px, #ff8a2b 6px 9px); }
+.meter.lvl3 .m-icon { width: 42px; height: 42px; background: #d6232b; border-color: #fff; animation: none; }
+.meter.lvl3 .m-icon svg { display: none; }
+.meter.lvl3 .m-icon b { display: block; }
+.meter.lvl3 .m-track span { background: #ff3b3b; }
+.meter.lvl3 .m-label { background: #8d1219; }
+@keyframes pulse { 50% { transform: scale(1.12); } }
+.callout { position: absolute; left: 0; top: 0; margin: 0; transform: translate(-50%, -100%); padding: 6px 14px 8px; border-radius: 14px; background: #fff; color: #b3141c;
+  font: 400 clamp(26px, 5vw, 42px)/1 var(--font); letter-spacing: 0.04em; box-shadow: 0 6px 22px #0008; animation: pop 0.25s ease-out; }
+.callout::after { content: ''; position: absolute; left: 50%; bottom: -9px; margin-left: -9px; border: 9px solid transparent; border-bottom: 0; border-top-color: #fff; }
+@keyframes pop { from { transform: translate(-50%, -100%) scale(0.4); } }
+
+.tree-bottom { position: absolute; left: 50%; bottom: calc(var(--safe-b) + 16px); transform: translateX(-50%); width: min(620px, calc(100% - 28px)); display: grid; justify-items: center; gap: 10px; }
+#subtitle { min-height: 1.4em; text-align: center; font-size: clamp(15px, 2.4vh, 22px); line-height: 1.35; text-shadow: 0 1px 3px #000, 0 0 12px #0009; }
+#subtitle .who { display: block; font-size: 0.6em; letter-spacing: 0.12em; opacity: 0.8; }
+#hint { margin: 0; padding: 9px 14px; border-radius: 999px; background: #1c2615b8; border: 1px solid #ffffff55; text-align: center; font-size: 12px; line-height: 1.4; transition: opacity 0.8s; }
+#hint.gone { opacity: 0; }
+
+/* ---- start and end cards */
+.tree-screen { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; overflow-y: auto; padding: calc(var(--safe-t) + 16px) 16px calc(var(--safe-b) + 16px); }
+/* the ending card sits low, so the men peering into the water stay in view above it */
+.tree-end { place-items: end center; padding-bottom: calc(var(--safe-b) + 28px); background: linear-gradient(180deg, #0d1a1600 0%, #0d1a1600 38%, #0d1a16d9 72%); }
+.tree-card { width: 100%; max-width: 400px; display: flex; flex-direction: column; align-items: stretch; gap: 12px; text-align: center; }
+.studio { margin: 0; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--ink); }
+.studio img { border-radius: 50%; border: 1px solid #fff; }
+.tree-title { margin: 0; font: 400 clamp(30px, 6vh, 52px)/1.05 var(--font); color: #fff; text-shadow: 0 1px 0 #3b328899, 0 2px 14px #3b32888c; }
+.tree-tag { margin: -4px 0 4px; font-size: 15px; color: var(--ink); letter-spacing: 0.04em; }
+.tree-end .tree-tag, .eyebrow { color: #d9ecdf; }
+.tree-end .tree-title { font-size: clamp(28px, 5vh, 44px); }
+.tree-end .tree-card { gap: 9px; }
+.eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.14em; }
+.tree-preview { margin: 0; border-radius: 16px; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--line); box-shadow: 0 10px 30px #32287866; background: var(--bg-deep); }
+.tree-preview img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.load { display: none; gap: 8px; }
+.loading .load { display: grid; }
+.load-bar { height: 10px; border-radius: 999px; overflow: hidden; background: #ffffff73; border: 1px solid #ffffffd9; }
+#load-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--violet), #9b8fe8); transition: width 0.2s; }
+#load-text { margin: 0; font-size: 13px; color: var(--ink); }
+.tree-how { margin: 0; font-size: 12px; line-height: 1.6; color: var(--ink-soft); }
+.back-link { align-self: center; display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 999px; color: var(--ink); text-decoration: none; font-size: 14px; }
+.tree-end .btn-link { max-width: 340px; width: 100%; margin: 0 auto; }
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .tree-preview { display: none; }
+  .tree-card { gap: 8px; }
+  .stance { top: calc(var(--safe-t) + 58px); }
+  #hint { font-size: 11px; padding: 6px 12px; }
+}
+@media (max-width: 420px) { .tree-name { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .meter.lvl2 .m-icon, .callout, #flash.on { animation: none; }
+}
