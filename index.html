@@ -37,6 +37,24 @@
     <p class="hub-choose">Choose your POV</p>
   </header>
 
+  <!-- The token's contract address, filled from SITE.token: tap the address or COPY to copy it. -->
+  <section id="token" class="token" aria-label="Token contract address">
+    <div class="token-head">
+      <span class="token-chain"><svg viewBox="0 0 24 20" aria-hidden="true"><path d="M4.4 14.6a.8.8 0 0 1 .6-.2h18.3c.4 0 .6.4.3.7l-3.6 3.6a.8.8 0 0 1-.6.3H1.1c-.4 0-.6-.5-.3-.8zm0-13.3A.8.8 0 0 1 5 1h18.3c.4 0 .6.5.3.8l-3.6 3.6a.8.8 0 0 1-.6.3H1.1c-.4 0-.6-.5-.3-.8zm15.2 6.6a.8.8 0 0 0-.6-.3H.7c-.4 0-.6.5-.3.8L4 12a.8.8 0 0 0 .6.3h18.3c.4 0 .6-.5.3-.8z"/></svg>SOLANA</span>
+      <h2 class="token-title">OFFICIAL TOKEN</h2>
+    </div>
+    <button id="copy-ca" class="token-ca" type="button" aria-describedby="copy-ca-status">
+      <span class="token-ca-tag">CA</span>
+      <code id="token-ca"></code>
+      <span class="token-copy"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="i-copy" d="M8 7V4.5A1.5 1.5 0 0 1 9.5 3h10A1.5 1.5 0 0 1 21 4.5v10a1.5 1.5 0 0 1-1.5 1.5H17v2.5a1.5 1.5 0 0 1-1.5 1.5h-10A1.5 1.5 0 0 1 4 18.5v-10A1.5 1.5 0 0 1 5.5 7zm2 0h5.5A1.5 1.5 0 0 1 17 8.5V14h2V5h-9zM6 9v9h9V9z"/><path class="i-done" d="M9.5 16.2 5.3 12l-1.4 1.4 5.6 5.6 11-11-1.4-1.4z"/></svg><span id="copy-ca-label">COPY CA</span></span>
+    </button>
+    <p id="copy-ca-status" class="token-status" role="status">Tap the address to copy</p>
+    <div class="token-links">
+      <a id="token-buy" class="token-btn buy" target="_blank" rel="noopener">BUY</a>
+      <a id="token-chart" class="token-btn" target="_blank" rel="noopener">CHART</a>
+    </div>
+  </section>
+
   <section id="games" class="cards" aria-label="Games"></section>
 
   <section class="social" aria-label="New games and updates">
