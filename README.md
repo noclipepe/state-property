@@ -2,7 +2,7 @@
 
 [![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
 
-Five playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
+Six playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
 
 ![The series menu: Fisherman POV with skin selection, Driver, Fish, Ant and God POV](docs/screenshot.png)
 
@@ -28,9 +28,13 @@ Five playable perspectives on the State Property meme, in the browser. Built for
   grow a giant ant and summon a fish thunderstorm. The powers share one world and work in any
   order. The giant ant follows and pushes the pickup, then eats fallen fish.
 
-All five start from one menu (`index.html`, "Choose your POV"). On phones, the looping carousel
+- **Witness POV**: hide on a branch over the pond and watch the argument through binoculars.
+  Each man has his own suspicion meter; stare too long and one of them spots you. "HEY!",
+  you flinch, the branch cracks, and you end up in the pond looking up at both of them.
+
+All six start from one menu (`index.html`, "Choose your POV"). On phones, the looping carousel
 swipes in either direction and snaps to a card, with neighboring cards peeking in at the edges.
-Only God POV has a **NEW** badge and a gold outline. The Fisherman card has a
+Only Witness POV has a **NEW** badge and a gold outline. The Fisherman card has a
 **SKIN: ORIGINAL / GRU** selector. Original is the default; an explicit
 selection is remembered in this browser. The selector updates a static gameplay preview
 without loading a 3D scene or leaving the menu. Press PLAY to launch the selected version.
@@ -95,6 +99,26 @@ The original argument continues underneath synthesized divine choir, wind and im
 Larger subtitles stay above a reserved hint area, so appearing or expiring instructions do not
 move the dialogue. Reset World restores all powers, weather, audio and active gestures.
 
+### Witness POV
+
+Open `tree.html` directly or choose **WITNESS POV** from the menu. You sit on a branch of a
+pondside tree, about 9 m from the pickup, with your legs on a fork of the branch and the
+binoculars in your hands. The branch sways, you rock gently on it, and your body leans the way
+you look. Both men are visible through a gap in the leaves.
+
+Suspicion rises only while the binoculars are aimed at a man (faster near the centre of the
+lenses): a steady stare fills a meter in about 4.5 seconds. Looking away lets it fall slowly;
+lowering the binoculars into the leaves lets it fall faster; switching targets keeps the other
+meter. Above each man: an eye icon, a bar and his state in words (UNAWARE, DISTRACTED,
+SUSPICIOUS, SPOTTED YOU). Distracted, he glances around; suspicious, he searches toward the tree
+(hide now and he calms down); at full suspicion the icon turns into a red "!" and he looks
+straight at you. The fisherman's "HEY!" is his own line from the original recording.
+
+Getting caught plays once: the other man turns too, you flinch, the branch bends and cracks,
+your hands grab for it, the binoculars slip, and you fall backward into the pond. A short
+underwater ending follows in the Fish POV's water style: the binoculars sink past you while
+both men peer down from the bank. Then **Caught watching 💀** and **TRY AGAIN**.
+
 ## Controls
 
 **Fisherman POV**
@@ -139,6 +163,10 @@ follows the route and left/right dodge. Drag or swipe to look, **V / LOOK UP** l
 and **C / TRAIL CAM** returns behind the ant. **Esc / P**, **R**, **M** and **H** pause, restart,
 mute and hide the interface. If autoplay is blocked, tap **TAP TO START**. Replay starts a new
 marching opening; automatic checkpoint retries skip it.
+
+**Witness POV controls:** drag (mouse or finger) to look around. Press and hold on someone
+(or hold the right mouse button / **Space**) to raise the binoculars, aimed at that point; keep
+dragging to aim and release to lower them. Arrow keys look/aim, **R** restarts, **M** mutes.
 
 **God POV controls:** drag the plug upward or use **PLUG**, then pull it with the hand.
 Drag the pickup with one finger or the mouse and release to place it. Tap **GIANT ANT** and

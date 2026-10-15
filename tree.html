@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7972bd"><title>STATE PROPERTY · Witness POV</title>
+<meta name="description" content="Hide in a tree by the pond and watch the State Property argument through binoculars. Don't stare too long.">
+<link rel="canonical" href="{{pageUrl}}"><meta property="og:type" content="website"><meta property="og:title" content="STATE PROPERTY · Witness POV"><meta property="og:description" content="Watching from the tree. Don't get spotted."><meta property="og:url" content="{{pageUrl}}"><meta property="og:image" content="{{ogImage}}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:site" content="@noclipepe">
+<link rel="icon" href="assets/brand/favicon.ico" sizes="any"><link rel="apple-touch-icon" href="assets/brand/apple-touch-icon.png">
+<link rel="preload" href="assets/brand/newrodin-db.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="src/ui/brand.css"><link rel="stylesheet" href="src/ui/tree.css">
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.js","three/addons/":"./vendor/three/addons/"}}</script>
+<script>document.documentElement.classList.toggle('touch',matchMedia('(pointer: coarse)').matches||'ontouchstart' in window);</script>
+</head><body><main id="stage">
+<canvas id="view" tabindex="0" aria-label="Witness POV: you are hiding on a branch above the pond. Hold to raise the binoculars, drag to aim, release to hide."></canvas>
+<canvas id="lens" aria-hidden="true"></canvas>
+<div id="flash" aria-hidden="true"></div>
+<div id="hud" hidden>
+  <header class="tree-top">
+    <a id="btn-menu" class="tree-pill" href="./">← MENU</a>
+    <span class="tree-name">WITNESS POV</span>
+    <div class="tree-actions"><button id="btn-sound" class="tree-pill" aria-pressed="true">SOUND ON</button><button id="btn-restart" class="tree-pill">RESTART</button></div>
+  </header>
+  <p id="stance" class="stance hidden"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="eye-open" d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle class="eye-open" cx="12" cy="12" r="3"/><path class="eye-shut" d="M3 11c2.5 3 5.5 4.5 9 4.5s6.5-1.5 9-4.5M7 14.5 5.5 17M12 15.5V18M17 14.5l1.5 2.5"/></svg><span id="stance-text">HIDDEN IN THE LEAVES</span></p>
+  <div id="meters">
+    <div class="meter" data-who="fisherman" hidden><div class="m-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg><b>!</b><i></i></div><div class="m-track"><span></span></div><p class="m-label"><span class="m-who">FISHERMAN</span> · <span class="m-state">UNAWARE</span></p></div>
+    <div class="meter" data-who="driver" hidden><div class="m-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3.2"/></svg><b>!</b><i></i></div><div class="m-track"><span></span></div><p class="m-label"><span class="m-who">DRIVER</span> · <span class="m-state">UNAWARE</span></p></div>
+  </div>
+  <p id="callout" class="callout" hidden>HEY!</p>
+  <div class="tree-bottom"><div id="subtitle"></div><p id="hint"></p></div>
+  <p id="announce" class="sr-only" aria-live="polite"></p>
+</div>
+<section id="start" class="tree-screen brand loading"><div class="tree-card">
+  <p class="studio"><img src="assets/brand/avatar-160.webp" width="30" height="30" alt="">STATE PROPERTY · by @noclipepe</p>
+  <h1 class="tree-title">WITNESS POV</h1><p class="tree-tag">Don't get spotted.</p>
+  <figure class="tree-preview"><img src="assets/brand/card-tree.jpg" alt="Through the leaves of a pondside tree: the pickup, the driver and the fisherman" width="640" height="400"></figure>
+  <div class="load"><div class="load-bar"><div id="load-fill"></div></div><p id="load-text" aria-live="polite">Climbing the tree…</p></div>
+  <button id="btn-enter" class="btn-play" hidden>START</button><button id="btn-retry" class="btn-small" hidden>TRY AGAIN</button>
+  <p class="tree-how" id="how"></p>
+  <a class="back-link" href="./">‹ Back to games</a>
+</div></section>
+<section id="end" class="tree-screen tree-end" hidden><div class="tree-card">
+  <p class="eyebrow">WITNESS POV</p>
+  <h2 class="tree-title">Caught watching 💀</h2>
+  <p id="end-detail" class="tree-tag"></p>
+  <button id="btn-again" class="btn-play">TRY AGAIN</button>
+  <a class="btn-link" href="./">CHOOSE ANOTHER POV</a>
+</div></section>
+</main><noscript><p class="noscript">Turn on JavaScript to play.</p></noscript>
+<script type="module" src="src/tree/main.js"></script></body></html>
