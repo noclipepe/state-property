@@ -74,6 +74,8 @@ button { cursor: pointer; font: inherit; }
 .tree-tag { margin: -4px 0 4px; font-size: 15px; color: var(--ink); letter-spacing: 0.04em; }
 .tree-end .tree-tag, .eyebrow { color: #d9ecdf; }
 .tree-end .tree-title { font-size: clamp(28px, 5vh, 44px); }
+.end-score { margin: 8px 0 16px; font: 400 clamp(34px, 7vh, 56px)/1 var(--font); color: #fff4c7; text-shadow: 0 2px 14px #000a; font-variant-numeric: tabular-nums; }
+.end-best { margin: -6px 0 4px; font-size: 12px; letter-spacing: 0.06em; color: #ffe39a; }
 .tree-end .tree-card { gap: 9px; }
 .eyebrow { margin: 0; font-size: 11px; letter-spacing: 0.14em; }
 .tree-preview { margin: 0; border-radius: 16px; overflow: hidden; aspect-ratio: 16 / 10; border: 1px solid var(--line); box-shadow: 0 10px 30px #32287866; background: var(--bg-deep); }

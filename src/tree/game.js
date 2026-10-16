@@ -137,7 +137,7 @@ export class TreeGame {
     this.driverAnim.reset(); this.driverAnim.idlePose();
     this.watchers.reset(); this.perch.reset(); this.underwater.enable(false); this.bounce.intensity = 0;
     this.caught = null; this.fall = null; this.sink = null; this.shout = null; this.flinch = 0;
-    this.raise = 0; this.aimAngles = { ...this.aimHome }; this.aimGoal = null; this.body = null; this.time = 0; this.watched = 0;
+    this.raise = 0; this.aimAngles = { ...this.aimHome }; this.aimGoal = null; this.body = null; this.time = 0; this.watched = 0; this.watchedFor = 0;
     this.ui.reset();
     for (let i = 0; i < 30; i++) this.poseActors(1 / 60);
     this.perch.update(0, this.reduced); this.placeCamera(0); this.perch.updateBody(0, this.camera, 0);
@@ -356,7 +356,10 @@ export class TreeGame {
     if (S.t > T.end && !S.shown) {
       S.shown = true;
       const by = this.caught?.who === 'driver' ? 'the driver' : 'the fisherman';
-      this.ui.showEnd(`Spotted by ${by} after ${this.watched.toFixed(1)} s in the tree.`);
+      const score = Math.floor(this.watchedFor * 10) / 10;
+      let best = 0;
+      try { best = Number(localStorage.getItem('state-property.witness.best')) || 0; if (score > best) localStorage.setItem('state-property.witness.best', String(score)); } catch { /* storage unavailable */ }
+      this.ui.showEnd(score, by, best);
     }
   }
 
@@ -402,6 +405,9 @@ export class TreeGame {
     this.perch.update(dt, this.reduced);
     this.placeCamera(dt);
     this.watchers.update(live ? dt : 0);
+    // the score: seconds spent actually watching one of them through the binoculars
+    // (raised and aimed at a man; the sky, the road or your own shoes don't count)
+    if (this.state === 'play' && this.raise > 0.85 && this.watchers.list.some((w) => w.focus > 0.02)) this.watchedFor += dt;
     this.watchers.react(dt);
     this.poseActors(dt);
     this.perch.updateBody(dt, this.camera, this.raise, this.body);

@@ -71,7 +71,13 @@ export class TreeUI {
   callout(who) { this.calloutWho = who; $('callout').hidden = false; }
   flash() { const f = $('flash'); f.classList.remove('on'); void f.offsetWidth; f.classList.add('on'); }
 
-  showEnd(text) { $('end-detail').textContent = text; $('end').hidden = false; $('hud').hidden = true; $('btn-again').focus({ preventScroll: true }); }
+  /** score: seconds spent watching them through the binoculars; best: the previous personal best */
+  showEnd(score, by, best) {
+    $('end-score').textContent = `${score.toFixed(1)} s`;
+    $('end-detail').textContent = `watching them through the binoculars before ${by} spotted you`;
+    $('end-best').textContent = score > best ? (best > 0 ? `New personal best! (was ${best.toFixed(1)} s)` : 'Your first record. Can you beat it?') : `Personal best: ${best.toFixed(1)} s`;
+    $('end').hidden = false; $('hud').hidden = true; $('btn-again').focus({ preventScroll: true });
+  }
   hideEnd() { $('end').hidden = true; $('hud').hidden = false; }
 
   update(dt) {
@@ -80,7 +86,7 @@ export class TreeUI {
     this.lens.style.opacity = g.state === 'underwater' ? 0 : Math.min(1, g.raise * 1.15).toFixed(3);
     const stance = $('stance'), raised = g.raise > 0.5;
     stance.classList.toggle('hidden', !raised);
-    $('stance-text').textContent = g.state === 'caught' || g.state === 'falling' ? 'SPOTTED!' : raised ? 'WATCHING' : 'HIDDEN IN THE LEAVES';
+    $('stance-text').textContent = g.state === 'caught' || g.state === 'falling' ? 'SPOTTED!' : raised ? `WATCHING · ${g.watchedFor.toFixed(1)} s` : 'HIDDEN IN THE LEAVES';
     stance.hidden = g.state === 'underwater';
     // the hint goes away once the player has tried the binoculars (or after a while)
     if (g.raise > 0.9) this.raisedFor += dt;

@@ -117,7 +117,12 @@ straight at you. The fisherman's "HEY!" is his own line from the original record
 Getting caught plays once: the other man turns too, you flinch, the branch bends and cracks,
 your hands grab for it, the binoculars slip, and you fall backward into the pond. A short
 underwater ending follows in the Fish POV's water style: the binoculars sink past you while
-both men peer down from the bank. Then **Caught watching 💀** and **TRY AGAIN**.
+both men peer down from the bank. Then **Caught watching**, your score and **TRY AGAIN**.
+
+The score is the time you spent actually watching them: seconds with the binoculars raised and
+aimed at one of the men (the sky, the road or hiding in the leaves don't count). It ticks up in
+the WATCHING badge while you play; the end screen shows it with your personal best in this
+browser. Lasting longer means switching between the two men and hiding at the right moments.
 
 ## Controls
 
