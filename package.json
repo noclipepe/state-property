@@ -21,6 +21,7 @@
     "verify:ant:route": "node tools/verify-ant-route.mjs",
     "verify:god": "node tools/verify-god.mjs",
     "verify:tree": "node tools/verify-tree.mjs",
+    "verify:escape": "node tools/verify-escape.mjs",
     "previews:ant": "node tools/capture-ant-mode.mjs http://127.0.0.1:8095/ --card",
     "verify:buckets": "node tools/verify-buckets.mjs",
     "previews:fish": "node tools/capture-fish.mjs http://localhost:8085/ --card",

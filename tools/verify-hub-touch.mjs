@@ -8,7 +8,7 @@ const BASE=(process.argv[2]||'http://127.0.0.1:8095/').replace(/\/?$/,'/');
 const out=process.argv[3]||'check-out/hub-touch';fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({args:['--use-angle=d3d11','--enable-gpu','--ignore-gpu-blocklist','--autoplay-policy=no-user-gesture-required']});
 const results=[],errors=[],measurements=[];
-const ids=['fisherman','driver','fish','ant','god','tree'];
+const ids=['fisherman','driver','fish','ant','god','tree','escape'];
 const check=(name,ok,detail={})=>{results.push({name,ok,detail});console.log(`${ok?'PASS':'FAIL'} ${name} ${JSON.stringify(detail)}`);};
 async function mobile(width=390,height=844){
   const context=await browser.newContext({viewport:{width,height},screen:{width,height},deviceScaleFactor:2,isMobile:true,hasTouch:true,
@@ -88,7 +88,7 @@ async function tour(t,area,label){
     const m=await metrics(t.page);if(m.visible.includes(id))seen.add(id);
   }
   const m=await metrics(t.page);m.visible.forEach(id=>seen.add(id));
-  check(`${label}: ${area} swipes reach all six PLAY buttons`,ids.every(id=>seen.has(id))&&m.max>0,{seen:[...seen],swipes:count,left:m.left,max:m.max});
+  check(`${label}: ${area} swipes reach all seven PLAY buttons`,ids.every(id=>seen.has(id))&&m.max>0,{seen:[...seen],swipes:count,left:m.left,max:m.max});
   check(`${label}: swipe does not launch a game`,t.page.url()===url);
   return m;
 }
@@ -118,14 +118,14 @@ try{
     const rail=before.parents.at(-1),visible=before.cards.filter(c=>Math.min(c.x+c.width,rail.x+rail.width)-Math.max(c.x,rail.x)>12);
     check(`${w}×${h}: first card is centered with neighbours on both sides`,centered(before)==='fisherman'&&visible.length>=3);
     await swipe(t,'image','right',40);
-    check(`${w}×${h}: short right swipe immediately wraps to the last card (WITNESS)`,centered(await metrics(t.page))==='tree');
+    check(`${w}×${h}: short right swipe immediately wraps to the last card (FISH ESCAPE)`,centered(await metrics(t.page))==='escape');
     await swipe(t,'image','left',40);
     check(`${w}×${h}: short left swipe wraps back to Fisherman`,centered(await metrics(t.page))==='fisherman');
     if(w===390){
       const tinyPoint=await t.page.locator('[data-game=fisherman] .card-img').boundingBox();
       const start={x:tinyPoint.x+tinyPoint.width/2,y:tinyPoint.y+tinyPoint.height/2};
       await drag(t,start,{x:start.x+16,y:start.y},{steps:2,interval:20});
-      check('a deliberate 16px swipe is enough to attract the next card',centered(await metrics(t.page))==='tree');
+      check('a deliberate 16px swipe is enough to attract the next card',centered(await metrics(t.page))==='escape');
       await t.page.evaluate(()=>{
         document.addEventListener('touchend',()=>{
           const rail=document.querySelector('.cards'),card=document.querySelector('[data-game=fisherman]');
@@ -133,23 +133,23 @@ try{
           window.__snapProbe={from:gap()};setTimeout(()=>{window.__snapProbe.remaining=gap();},130);
         },{capture:true,once:true});
       });
-      const tinyBack=await t.page.locator('[data-game=tree] .card-title').boundingBox();
+      const tinyBack=await t.page.locator('[data-game=escape] .card-title').boundingBox();
       const back={x:tinyBack.x+tinyBack.width/2,y:tinyBack.y+tinyBack.height/2};
       await drag(t,back,{x:back.x-16,y:back.y},{steps:2,interval:20});
       const snap=await t.page.evaluate(()=>window.__snapProbe);
       check('stronger attraction covers most of the distance in 130ms and centers cleanly',snap.from>200&&snap.remaining<snap.from*.12&&centered(await metrics(t.page))==='fisherman',snap);
       for(const direction of ['left','right']){
         const seen=[];
-        for(let i=0;i<12;i++){await swipe(t,i%2?'text':'image',direction,40);seen.push(centered(await metrics(t.page)));}
-        const expected=direction==='left'?['driver','fish','ant','god','tree','fisherman']:['tree','god','ant','fish','driver','fisherman'];
-        check(`two full loops ${direction}: every short swipe advances exactly one card`,seen.every((id,i)=>id===expected[i%6]),{seen});
+        for(let i=0;i<14;i++){await swipe(t,i%2?'text':'image',direction,40);seen.push(centered(await metrics(t.page)));}
+        const expected=direction==='left'?['driver','fish','ant','god','tree','escape','fisherman']:['escape','tree','god','ant','fish','driver','fisherman'];
+        check(`two full loops ${direction}: every short swipe advances exactly one card`,seen.every((id,i)=>id===expected[i%7]),{seen});
       }
-      check('looping keeps only six real cards and one skin picker',await t.page.locator('.card').count()===6&&await t.page.locator('#choose-skin').count()===1);
+      check('looping keeps only seven real cards and one skin picker',await t.page.locator('.card').count()===7&&await t.page.locator('#choose-skin').count()===1);
       await swipe(t,'image','left',230,{steps:4,interval:0,pause:0});
       check('a fast swipe advances several cards', ['fish','ant'].includes(centered(await metrics(t.page))));
       await load(t.page);
       await t.page.emulateMedia({reducedMotion:'reduce'});await swipe(t,'image','right',40);
-      check('reduced motion still supports the infinite loop',centered(await metrics(t.page))==='tree');
+      check('reduced motion still supports the infinite loop',centered(await metrics(t.page))==='escape');
       await t.page.emulateMedia({reducedMotion:'no-preference'});await load(t.page);
     }
     for(const area of ['image','text']){if(area==='text')await load(t.page,BASE+'?text-swipe');await tour(t,area,`${w}×${h}`);}
@@ -202,6 +202,7 @@ try{
       await tapPlay(t,id);check(`${id}: ordinary PLAY tap launches the selected POV`,await t.page.evaluate(()=>!!window.__game));
       if(id==='fisherman'){await t.page.tap('#btn-go');await t.page.tap('#btn-pause');await t.page.tap('#btn-pause-games');}
       else if(id==='god'||id==='tree'){await t.page.tap('#btn-enter');await t.page.tap('#btn-menu');}
+      else if(id==='escape'){await t.page.waitForSelector('#btn-play:not([hidden])');await t.page.tap('#btn-play');await t.page.waitForTimeout(500);await t.page.tap('#view');await t.page.tap('#btn-menu');}
       else {await t.page.tap('#btn-pause');await t.page.tap('#btn-games');}
       await t.page.waitForURL(url=>url.href===BASE||url.href===BASE+'index.html');await t.page.waitForFunction(()=>window.__hubReady);
       check(`${id}: return loads only the menu`,await t.page.evaluate(()=>!window.__game&&!document.querySelector('canvas')));
@@ -215,7 +216,7 @@ try{
   }
   {
     const p=await browser.newPage({viewport:{width:1280,height:800}});await load(p);const m=await metrics(p);
-    check('desktop retains six fully visible cards',m.visible.length===6&&m.max===0&&m.parents[0].scrollWidth===1280,m);
+    check('desktop retains seven fully visible cards',m.visible.length===7&&m.max===0&&m.parents[0].scrollWidth===1280,m);
     await p.screenshot({path:out+'/desktop.png'});await p.close();
   }
   check('no runtime errors',errors.length===0,errors);

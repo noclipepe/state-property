@@ -7,7 +7,7 @@ export const SITE = {
   subtitle: 'Choose your POV',
   studio: 'noclipepe games',
   handle: '@noclipepe',
-  description: 'Six perspectives on the State Property meme: fisherman, driver, fish, ant, divine intervention, and a witness in a tree. Free browser games by @noclipepe.',
+  description: 'Six perspectives on the State Property meme (fisherman, driver, fish, ant, divine intervention and a witness in a tree), plus Fish Escape, an endless hopping run. Free browser games by @noclipepe.',
 
   // The address the site is published at (e.g. 'https://state-property.pages.dev/'), for the
   // og:url / og:image tags. Leave empty until it is known: the build then writes relative previews.
@@ -46,7 +46,8 @@ export const SITE = {
     { id: 'fish', title: 'FISH POV', tagline: "You're already caught.", image: 'assets/brand/card-fish.jpg', available: true, launch: { page: 'fish.html' } },
     { id: 'ant', title: 'ANT POV', tagline: 'Just trying to get home.', image: 'assets/brand/card-ant.jpg', available: true, launch: { page: 'ant.html' } },
     { id: 'god', title: 'GOD POV', tagline: 'Divine intervention.', image: 'assets/brand/card-god.jpg', available: true, launch: { page: 'god.html' } },
-    { id: 'tree', title: 'WITNESS POV', tagline: "Don't get spotted.", image: 'assets/brand/card-tree.jpg', isNew: true, available: true, launch: { page: 'tree.html' } },
+    { id: 'tree', title: 'WITNESS POV', tagline: "Don't get spotted.", image: 'assets/brand/card-tree.jpg', available: true, launch: { page: 'tree.html' } },
+    { id: 'escape', title: 'FISH ESCAPE', tagline: 'Hop for your life.', image: 'assets/brand/card-escape.jpg', isNew: true, available: true, launch: { page: 'escape.html' } },
   ],
 
   // Analytics adapter, off by default (no events are collected). See README > Analytics.

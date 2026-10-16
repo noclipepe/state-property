@@ -47,10 +47,10 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
       sideBySide: cards.length > 1 && Math.abs(cards[0].getBoundingClientRect().top - cards[1].getBoundingClientRect().top) < 2,
     };
   });
-  check('menu: six playable POV cards with screenshots', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html?skin=original,DRIVER POV>driver.html,FISH POV>fish.html,ANT POV>ant.html,GOD POV>god.html,WITNESS POV>tree.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
+  check('menu: seven playable cards with screenshots', hub.cards.map((c) => `${c.title}>${c.play}`).join() === 'FISHERMAN POV>fisherman.html?skin=original,DRIVER POV>driver.html,FISH POV>fish.html,ANT POV>ant.html,GOD POV>god.html,WITNESS POV>tree.html,FISH ESCAPE>escape.html' && hub.cards.every((c) => c.img > 0), JSON.stringify(hub.cards.map((c) => c.title)));
   check('Fish POV replaces the secret teaser', await page.locator('.card.teaser').count() === 0 && await page.locator('[data-game=fish] .card-tag').textContent() === "You're already caught.");
-  check('only WITNESS POV has NEW and a highlighted border; skin label no longer says New', await page.evaluate(() => {
-    const card=document.querySelector('[data-game=tree]'),style=getComputedStyle(card);
+  check('only FISH ESCAPE has NEW and a highlighted border; skin label no longer says New', await page.evaluate(() => {
+    const card=document.querySelector('[data-game=escape]'),style=getComputedStyle(card);
     return document.querySelectorAll('.new-badge').length===1 && card.querySelector('.new-badge')?.textContent==='NEW'
       && document.querySelectorAll('.card.is-new').length===1 && card.classList.contains('is-new')
       && style.borderColor==='rgb(255, 229, 154)' && style.boxShadow.includes('2px')
@@ -144,7 +144,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.evaluate(() => addEventListener('pagehide', () => sessionStorage.setItem('exitAudio', window.__game.audio.ctx.state)));
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-games')]);
   await hubReady(page);
-  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 6);
+  check('Pause > BACK TO GAMES returns to the menu with the sound stopped', (await page.evaluate(() => sessionStorage.getItem('exitAudio'))) === 'suspended' && (await page.locator('.card').count()) === 7);
 
   await choose('original');
   check('switching back restores Original preview and its saved preference', (await skinState()).image.endsWith('card-fisherman.jpg') && (await skinState()).stored === 'original' && !(await skinState()).open);
@@ -185,7 +185,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.waitForFunction(() => !document.getElementById('end').hidden, null, { timeout: 20000 });
   await Promise.all([page.waitForURL((u) => u.pathname.endsWith('/')), page.click('#btn-other')]);
   await hubReady(page);
-  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 6);
+  check('end screen > CHOOSE ANOTHER POV returns to the menu', (await page.locator('.card').count()) === 7);
   await page.click('.card[data-game=fish] .btn-play');
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
   check('Fish POV needs no second PLAY after loading', await page.evaluate(() => __game.mode === 'play' && !document.querySelector('#btn-go')));
@@ -194,7 +194,7 @@ const hubReady = (page) => page.waitForFunction(() => window.__hubReady === true
   await page.click('#btn-pause');
   await page.click('#btn-games');
   await hubReady(page);
-  check('Fish POV returns to the six-mode menu', (await page.locator('.card .btn-play').count()) === 6);
+  check('Fish POV returns to the seven-card menu', (await page.locator('.card .btn-play').count()) === 7);
   check('playing Driver and Fish preserves the Fisherman preference', (await skinState()).stored === 'gru' && (await skinState()).label === 'SKIN: GRU');
   await ctx.close();
 }

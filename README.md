@@ -2,7 +2,8 @@
 
 [![PLAY NOW](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-state--property.pages.dev-5b50b4?style=for-the-badge)](https://state-property.pages.dev/)
 
-Six playable perspectives on the State Property meme, in the browser. Built for desktop and mobile.
+Six playable perspectives on the State Property meme, plus Fish Escape, an endless hopping run, in the
+browser. Built for desktop and mobile.
 
 ![The series menu: Fisherman POV with skin selection, Driver, Fish, Ant and God POV](docs/screenshot.png)
 
@@ -32,9 +33,13 @@ Six playable perspectives on the State Property meme, in the browser. Built for 
   Each man has his own suspicion meter; stare too long and one of them spots you. "HEY!",
   you flinch, the branch cracks, and you end up in the pond looking up at both of them.
 
-All six start from one menu (`index.html`, "Choose your POV"). On phones, the looping carousel
+- **Fish Escape**: the fish jumps out of the bucket and hops for its life, Crossy Road style:
+  crabs, cars, pickups and box trucks, fast streams and PRIVATE PROPERTY fences, while the
+  original argument plays in the background. Keep moving or the fisherman hooks you back.
+
+All seven start from one menu (`index.html`, "Choose your POV"). On phones, the looping carousel
 swipes in either direction and snaps to a card, with neighboring cards peeking in at the edges.
-Only Witness POV has a **NEW** badge and a gold outline. The Fisherman card has a
+Only Fish Escape has a **NEW** badge and a gold outline. The Fisherman card has a
 **SKIN: ORIGINAL / GRU** selector. Original is the default; an explicit
 selection is remembered in this browser. The selector updates a static gameplay preview
 without loading a 3D scene or leaving the menu. Press PLAY to launch the selected version.
@@ -123,6 +128,59 @@ The score is the time you spent actually watching them: seconds with the binocul
 aimed at one of the men (the sky, the road or hiding in the leaves don't count). It ticks up in
 the WATCHING badge while you play; the end screen shows it with your personal best in this
 browser. Lasting longer means switching between the two men and hiding at the right moments.
+
+## Fish Escape
+
+Open `escape.html` (or **FISH ESCAPE** in the menu). An endless hop-the-crossings run in the
+spirit of Crossy Road: the fish leaps out of the bucket by the pickup and flops along the lake
+shore, one grid cell per hop.
+
+- **Opening:** PLAY (which also turns the sound on) opens on the series' familiar shot: the
+  fisherman at the pickup's window, letterboxed, "Who told you you could fish here?" with a
+  caption and mouths following the recording, while the fish keeps leaping up out of the bucket
+  beside them. Right after that line the camera drops to the bucket, the fish jumps out and the run
+  begins; the exchange carries on in the background ("I thought it was state property." …
+  "STATE?!" "Yeah."). Any tap or key skips it (a move key also hops at once). PLAY AGAIN goes
+  straight to the run.
+- **Controls:** tap / W / ↑ / Space hop forward; swipe or A, D, S (←, →, ↓) hop left, right or
+  back. One gesture is one move (decided when the finger lifts); one extra input during a hop is
+  kept, a burst never queues up a run of hops. Held keys do not repeat. Every 3–6 hops the fish
+  rolls right over in the air and lands on its other side.
+- **Grass:** safe ground with tufts, clover, flowers, toadstools and lines of ants carrying crumbs;
+  buckets, boulders and round bushes block cells (bump one and it wobbles). **Fences** with
+  PRIVATE PROPERTY / STATE PROPERTY signs cross the lawn with a one- or two-cell gate near the
+  middle, never straight ahead of the last one: holding forward doesn't get you anywhere.
+- **Sand:** crab lanes, one species per lane: red shore crabs, blue crabs, green crabs, violet
+  crabs, small fast ghost crabs, and the occasional huge, slow king crab. They walk sideways in
+  groups; a hop is not a jump over them. Lost hooks lie in the sand.
+- **Road:** vehicles at real width, so a lane spans several rows: cars and the familiar pickup take
+  2 rows, box trucks (STATE PROPERTY on the side and roof) take 3. Three kinds, five colours each.
+  Dashed lines between lanes going the same way, a double yellow line between opposite ones,
+  kerbs, PRIVATE PROPERTY painted on the odd lane. Express lanes send one fast white pickup
+  through; lamps at both ends blink and a bell rings first.
+- **Stream:** one to three rows; a strong current carries the fish sideways (from the middle to
+  the edge in about 2 s, 1.3 s later on); drift off the edge and you're swept away. The
+  fisherman's red and white floats drift past.
+- **The original argument plays in the background:** after the opening, a line every 14–22 s,
+  and each ending has its own ("Lock 'em up!" when hooked, "Hit the road, dude." under a
+  vehicle), all captioned.
+- **The hook:** no new furthest row for 6 s and the fisherman casts at your cell (a red circle
+  fills while the hook drops). Leave the circle in 1.2 s and it misses; it can retry after a
+  short pause; any new furthest row cancels it. Caught: lifted out and dropped back into the bucket.
+- **Difficulty** rises over the first 90 rows (faster lanes, tighter gaps, more lanes in a row,
+  mixed sand and road, more blockers and fences, a single grass row between hazards), then stays put.
+- **Score:** one point per new furthest row (going back and forth doesn't count); the best is
+  kept in the browser.
+- All tuning is in `src/escape/config.js`. The rules run at a fixed 120 Hz step. The generator
+  guarantees that grass rows stay connected around blockers with no dead ends (you never have to
+  go back to reach a gap or a gate), that every lane (including consecutive and multi-row lanes)
+  leaves enough time to cross, and that streams sit between grass rows; rows behind the fish are
+  recycled.
+
+```bash
+npm run verify:escape          # opening scene, controls, taps vs swipes, blockers and fences, crabs and wide vehicle lanes, the fish's roll, streams, express warning, hook, scoring, generator fairness, holding forward, bot runs, layouts
+node tools/capture-escape.mjs  # writes assets/brand/card-escape.jpg
+```
 
 ## Controls
 
