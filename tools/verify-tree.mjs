@@ -98,6 +98,11 @@ const wait = (page, ms) => page.waitForTimeout(ms);
   const awayRate = (b.d - c.d), hideRate = (c.d - d.d);
   check(awayRate >= 0 && hideRate > awayRate * 1.5, 'looking away lets suspicion fall; hiding in the leaves makes it fall faster', `away −${awayRate.toFixed(3)} hidden −${hideRate.toFixed(3)} (2.4 s each)`);
   check(d.state === 'play', 'careful watching (with breaks) does not get you caught');
+  // the score only counts binocular time spent on one of the men
+  const score0 = await page.evaluate(() => __game.watchedFor);
+  await aimAway(page); await page.keyboard.down('Space'); await wait(page, 1500); await page.keyboard.up('Space');
+  await wait(page, 1000);
+  check(Math.abs((await page.evaluate(() => __game.watchedFor)) - score0) < 0.05, 'binoculars on the sky or hidden in the leaves do not add to the score', `${score0.toFixed(2)} s`);
 
   // the levels show on the characters: push the fisherman to "suspicious" and look at his head turn
   await page.evaluate(() => { __game.watchers.fisherman.value = 0.8; });
@@ -140,8 +145,9 @@ const wait = (page, ms) => page.waitForTimeout(ms);
   });
   check(under.y < 0 && under.water && under.fisher && under.driver && under.binoculars, 'underwater: both men peer down from the bank, the binoculars sink in front', JSON.stringify(under));
   await page.waitForSelector('#end:not([hidden])', { timeout: 15000 });
-  const end = await page.evaluate(() => document.querySelector('#end h2').textContent);
-  check(end.includes('Caught watching 💀'), '"Caught watching 💀" and "Try again"');
+  const end = await page.evaluate(() => ({ title: document.querySelector('#end h2').textContent, score: document.getElementById('end-score').textContent, best: document.getElementById('end-best').textContent, watched: __game.watchedFor }));
+  check(end.title.trim() === 'Caught watching', '"Caught watching" and "Try again"');
+  check(/^\d+\.\d s$/.test(end.score) && end.watched > 2 && end.best.length > 0, 'the ending shows the seconds spent watching them, and the personal best', JSON.stringify(end));
   await page.screenshot({ path: `${OUT}/desktop-end.png` });
 
   await page.click('#btn-again'); await wait(page, 300);
@@ -164,6 +170,7 @@ const wait = (page, ms) => page.waitForTimeout(ms);
   await page.mouse.up();
   await page.waitForSelector('#end:not([hidden])', { timeout: 9000 });
   check((await page.textContent('#end-detail')).includes('the driver'), 'the ending names who spotted you');
+  check((await page.textContent('#end-best')).length > 0, 'a personal best is kept between runs', await page.textContent('#end-best'));
   await page.keyboard.press('KeyR'); await wait(page, 200);
   check((await state(page)).state === 'play', 'R restarts too');
   // timing: a curious first-timer who keeps the fisherman centred is spotted well inside 15–20 s
