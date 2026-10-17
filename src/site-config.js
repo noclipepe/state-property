@@ -20,14 +20,6 @@ export const SITE = {
     reel: 'https://www.instagram.com/reel/DeP2NfbMGPl/', // the driver POV reel
   },
 
-  // The token shown at the top of the series menu. ca: the contract address (null hides the block);
-  // buy / chart: where the BUY and CHART buttons go (null hides that button).
-  token: {
-    ca: 'AXDjihwNsYQqDueHamwHDnE3JvMf2yb86U4kqvxGpump',
-    buy: 'https://pump.fun/coin/AXDjihwNsYQqDueHamwHDnE3JvMf2yb86U4kqvxGpump',
-    chart: 'https://dexscreener.com/solana/AXDjihwNsYQqDueHamwHDnE3JvMf2yb86U4kqvxGpump',
-  },
-
   // The series menu (index.html), in this order. To add a game later, add an entry:
   //   id         unique, lowercase
   //   title      shown on the card
